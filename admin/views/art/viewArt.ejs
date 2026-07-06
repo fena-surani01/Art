@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+
+    <div class="module-title">
+        <h1 class="module-heading">View Arts</h1>
+    </div>
+
+    <div class="table-card">
+        <style>
+            /* Transform standard table into a premium rounded card list */
+            .artist-table {
+                border-collapse: separate !important;
+                border-spacing: 0 12px !important;
+            }
+            .artist-table tbody tr {
+                background-color: #ffffff;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.02);
+                transition: all 0.3s ease;
+            }
+            .artist-table tbody td {
+                border-top: 1px solid #f1f2f4;
+                border-bottom: 1px solid #f1f2f4;
+                padding: 16px 12px !important;
+                background-color: transparent !important;
+                vertical-align: middle;
+            }
+            .artist-table tbody td:first-child {
+                border-left: 1px solid #f1f2f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .artist-table tbody td:last-child {
+                border-right: 1px solid #f1f2f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            /* Premium Out-of-Stock Indicator */
+            .status-indicator-stockout {
+                background-color: rgba(220, 53, 69, 0.03) !important;
+            }
+            .status-indicator-stockout td:first-child {
+                border-left: 5px solid #dc3545 !important;
+            }
+            
+            .artist-table tbody tr:not(.status-indicator-stockout) td:first-child {
+                border-left: 5px solid transparent;
+            }
+        </style>
+
+        <a href="/admin/art/add" class="submit-btn mb-3">
+            <i class="bi bi-plus-circle"></i> Add Art
+        </a>
+
+        <table class="table artist-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Created Date</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="artTableBody"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script src="/admin/js/art.js"></script>
+
+<%- include('../partials/footer') %>

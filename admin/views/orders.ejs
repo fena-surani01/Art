@@ -1,0 +1,307 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    <div class="module-title">
+        <h2 class="module-heading">Manage Orders</h2>
+    </div>
+
+    <div class="table-card">
+        <style>
+            /* Transform standard table into a premium rounded card list */
+            .artist-table {
+                border-collapse: separate !important;
+                border-spacing: 0 12px !important; /* Space between rows */
+            }
+            .artist-table tbody tr {
+                background-color: #ffffff;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.02); /* Soft shadow */
+                transition: all 0.3s ease;
+            }
+            .artist-table tbody td {
+                border-top: 1px solid #f1f2f4;
+                border-bottom: 1px solid #f1f2f4;
+                padding: 16px 12px !important;
+                background-color: transparent !important;
+            }
+            .artist-table tbody td:first-child {
+                border-left: 1px solid #f1f2f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .artist-table tbody td:last-child {
+                border-right: 1px solid #f1f2f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            /* Premium status indicator styling */
+            .status-indicator-cancelled {
+                background-color: rgba(220, 53, 69, 0.03) !important;
+                opacity: 0.85; 
+            }
+            .status-indicator-cancelled td:first-child {
+                border-left: 5px solid #dc3545 !important;
+            }
+
+            .status-indicator-delivered {
+                background-color: rgba(25, 135, 84, 0.04) !important;
+            }
+            .status-indicator-delivered td:first-child {
+                border-left: 5px solid #198754 !important;
+            }
+            
+            /* The default state border color (transparent fallback) */
+            .artist-table tbody tr:not(.status-indicator-cancelled):not(.status-indicator-delivered) td:first-child {
+                border-left: 5px solid transparent;
+            }
+        </style>
+        <div class="table-header">
+            <h5>All Customer Orders</h5>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table artist-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.forEach(order => { %>
+                            <% 
+                                let rowClass = '';
+                                if (order.status === 'Cancelled') rowClass = 'status-indicator-cancelled';
+                                else if (order.status === 'Delivered') rowClass = 'status-indicator-delivered';
+                            %>
+                            <tr class="<%= rowClass %>" id="row-<%= order.order_id %>">
+                                <td class="fw-bold">#ORD-<%= order.order_id %></td>
+                                <td>
+                                    <div class="fw-bold"><%= order.customer_name %></div>
+                                    <div class="small text-muted"><%= order.phone_number || order.customer_email %></div>
+                                </td>
+                                <td class="fw-bold text-success">₹<%= order.total_amount %></td>
+                                <td>
+                                    <span class="badge bg-secondary"><%= order.payment_method %></span>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm status-select" style="width: 130px; font-weight: 600;" data-id="<%= order.order_id %>">
+                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <% 
+                                        const date = new Date(order.created_at);
+                                        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                        
+                                        const estDate = new Date(date);
+                                        estDate.setDate(estDate.getDate() + 7);
+                                        const formattedEst = estDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                    %>
+                                    <div class="fw-bold text-dark"><i class="bi bi-calendar3 me-1"></i><%= formattedDate %></div>
+                                    <div class="small text-muted mt-1"><i class="bi bi-truck me-1"></i>Est: <%= formattedEst %></div>
+                                </td>
+                                <td>
+                                    <button class="action-btn edit-btn" title="View Details" onclick="viewOrderDetails(<%= order.order_id %>)">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No orders found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-bottom-0 bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold" id="modalOrderTitle">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-2">Shipping Address</h6>
+                        <div class="p-3 bg-light rounded" id="shippingAddressBox">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted text-uppercase small fw-bold mb-2">Payment Info</h6>
+                        <div class="p-3 bg-light rounded" id="paymentInfoBox">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Items Ordered</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle" id="orderItemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Store orders array for easy modal access
+    const ordersData = <%- JSON.stringify(orders || []) %>;
+
+    function viewOrderDetails(orderId) {
+        const order = ordersData.find(o => o.order_id === orderId);
+        if (!order) return;
+
+        document.getElementById('modalOrderTitle').innerText = 'Order #ORD-' + orderId;
+
+        // Populate Address
+        const addrHtml = `
+            <strong>${order.customer_name}</strong><br>
+            ${order.shipping_address}<br>
+            ${order.shipping_city}, ${order.shipping_state} ${order.shipping_zip}<br>
+            <i class="bi bi-telephone-fill me-1"></i> ${order.phone_number}
+        `;
+        document.getElementById('shippingAddressBox').innerHTML = addrHtml;
+
+        // Populate Payment and Status
+        const payHtml = `
+            <strong>Method:</strong> ${order.payment_method} <br>
+            <strong>Payment Status:</strong> <span class="badge ${order.payment_status === 'Paid' ? 'bg-success' : 'bg-warning'}">${order.payment_status}</span><br>
+            <strong>Order Status:</strong> <span class="badge bg-info">${order.status}</span><br>
+            <strong>Total Amount:</strong> <span class="text-primary fw-bold">₹${order.total_amount}</span>
+        `;
+        document.getElementById('paymentInfoBox').innerHTML = payHtml;
+
+        // Fetch Items
+        const tbody = document.querySelector('#orderItemsTable tbody');
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div> Loading items...</td></tr>';
+        
+        const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+        modal.show();
+
+        fetch(`/admin/api/orders/${orderId}/items`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.items.length > 0) {
+                    let itemsHtml = '';
+                    data.items.forEach(item => {
+                        itemsHtml += `
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="${item.image_path || '/images/default-art.jpg'}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;" class="me-3">
+                                        <div>
+                                            <div class="fw-bold">${item.title}</div>
+                                            <div class="small text-muted">${item.artist_name || 'Unknown Artist'}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">${item.quantity}</td>
+                                <td class="text-end fw-semibold">₹${item.price}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = itemsHtml;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No items found for this order.</td></tr>';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Failed to load items.</td></tr>';
+            });
+    }
+
+    // Handle Status Change
+    window.attachOrderEvents = function() {
+        document.querySelectorAll('.status-select:not([data-bound="true"])').forEach(select => {
+            select.setAttribute('data-bound', 'true');
+            select.addEventListener('change', function() {
+            const orderId = this.getAttribute('data-id');
+            const newStatus = this.value;
+            
+            // Visual feedback
+            this.style.opacity = '0.5';
+
+            fetch(`/admin/api/orders/update/${orderId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                    throw new Error('Session expired');
+                }
+                return res.json();
+            })
+            .then(data => {
+                this.style.opacity = '1';
+                if (!data.success) {
+                    if (window.showActionToast) window.showActionToast('ord-err', 'Error', 'Failed to update status', 'bi-exclamation-triangle-fill', 'danger');
+                } else {
+                    if (window.showActionToast) window.showActionToast('ord-succ', 'Updated', 'Order status updated successfully', 'bi-check-circle-fill', 'success');
+                    
+                    // Update local data so the modal shows the correct status without refresh
+                    const orderToUpdate = ordersData.find(o => o.order_id == orderId);
+                    if(orderToUpdate) {
+                        orderToUpdate.status = newStatus;
+                    }
+                    
+                    // Update row color
+                    const row = document.getElementById('row-' + orderId);
+                    if (row) {
+                        row.classList.remove('status-indicator-cancelled', 'status-indicator-delivered');
+                        if (newStatus === 'Cancelled') row.classList.add('status-indicator-cancelled');
+                        else if (newStatus === 'Delivered') row.classList.add('status-indicator-delivered');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                this.style.opacity = '1';
+                if (window.showActionToast) window.showActionToast('ord-err2', 'Error', 'Error updating status', 'bi-exclamation-triangle-fill', 'danger');
+            });
+        });
+        });
+    };
+
+    // Initialize on load
+    window.attachOrderEvents();
+</script>
+</body>
+</html>

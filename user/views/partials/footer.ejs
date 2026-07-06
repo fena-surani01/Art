@@ -1,0 +1,215 @@
+<footer class="footer-section">
+
+    <div class="container">
+
+        <div class="footer-brand">
+            Fenaria
+        </div>
+
+        <p class="footer-tagline">
+            Where art finds its true admirers.
+        </p>
+
+        <div class="footer-links">
+
+            <a href="/user/home">Home</a>
+
+            <a href="/user/artists">Artists</a>
+
+            <a href="/user/collections">Collections</a>
+
+            <a href="/user/orders">Orders</a>
+
+        </div>
+
+        <div class="footer-social">
+
+            <a href="https://www.instagram.com/fena_the_artist01/" target="_blank">
+                <i class="bi bi-instagram"></i>
+            </a>
+
+        </div>
+
+        <div class="footer-bottom">
+            © 2025 Fenaria. All rights reserved.
+        </div>
+
+    </div>
+
+</footer>
+
+<!-- Premium Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" id="reviewModalLabel">
+                    <i class="bi bi-star-fill text-warning me-2"></i> How was your art?
+                </h5>
+                <!-- No close button so they are encouraged to review, or maybe add a "Review Later" button -->
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="delayReview()"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <img id="reviewArtImage" src="" alt="Art" class="rounded-3 shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                <h5 id="reviewArtTitle" class="fw-bold mb-1">Art Title</h5>
+                <p class="text-muted small mb-4">Delivered from Fenaria</p>
+                
+                <h6 class="mb-3">Rate your experience</h6>
+                <div class="star-rating mb-4 d-flex justify-content-center flex-row-reverse">
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
+                </div>
+
+                <div class="form-group text-start">
+                    <label class="fw-semibold small text-muted mb-2">Leave a comment (Optional)</label>
+                    <textarea id="reviewComment" class="form-control rounded-3 bg-light border-0 p-3" rows="3" placeholder="Tell us what you loved about this piece..."></textarea>
+                </div>
+                
+                <input type="hidden" id="reviewOrderId">
+                <input type="hidden" id="reviewArtId">
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" onclick="delayReview()">Review Later</button>
+                <button type="button" class="btn btn-dark rounded-pill px-4 flex-grow-1 shadow" onclick="submitReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Premium Star Rating CSS */
+    .star-rating {
+        font-size: 2rem;
+        gap: 0.5rem;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        color: #e4e5e9;
+        cursor: pointer;
+        transition: color 0.2s ease-in-out, transform 0.1s;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+        color: #ffc107;
+    }
+    .star-rating label:active {
+        transform: scale(0.8);
+    }
+    .modal {
+        z-index: 1055 !important;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let currentPendingReviews = [];
+    let reviewModalInstance = null;
+    let reviewDelayedUntil = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize Modal
+        reviewModalInstance = new bootstrap.Modal(document.getElementById('reviewModal'));
+        
+        // Start polling for reviews every 15 seconds
+        setInterval(checkPendingReviews, 15000);
+        // Check immediately on load
+        setTimeout(checkPendingReviews, 2000);
+    });
+
+    function checkPendingReviews() {
+        // If they clicked "Review Later", wait 5 minutes before bothering them again
+        if (Date.now() < reviewDelayedUntil) return;
+        
+        // If a modal is already open, don't interfere
+        if (document.getElementById('reviewModal').classList.contains('show')) return;
+
+        fetch('/api/user/reviews/pending')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.items && data.items.length > 0) {
+                    currentPendingReviews = data.items;
+                    showReviewModal(currentPendingReviews[0]);
+                }
+            })
+            .catch(console.error);
+    }
+
+    function showReviewModal(item) {
+        document.getElementById('reviewOrderId').value = item.order_id;
+        document.getElementById('reviewArtId').value = item.art_id;
+        document.getElementById('reviewArtTitle').innerText = item.title;
+        document.getElementById('reviewArtImage').src = item.image_path || '/images/default-art.jpg';
+        
+        // Reset form
+        document.getElementById('reviewComment').value = '';
+        document.querySelectorAll('.star-rating input').forEach(input => input.checked = false);
+        
+        reviewModalInstance.show();
+    }
+
+    function delayReview() {
+        // Snooze for 2 minutes
+        reviewDelayedUntil = Date.now() + (2 * 60 * 1000); 
+    }
+
+    function submitReview() {
+        const orderId = document.getElementById('reviewOrderId').value;
+        const artId = document.getElementById('reviewArtId').value;
+        const comment = document.getElementById('reviewComment').value;
+        
+        // Find checked rating
+        const ratingInput = document.querySelector('.star-rating input:checked');
+        if (!ratingInput) {
+            alert('Please select a star rating!');
+            return;
+        }
+        const rating = ratingInput.value;
+
+        // Button loading state
+        const btn = document.querySelector('#reviewModal .btn-dark');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+        btn.disabled = true;
+
+        fetch('/api/user/reviews/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: orderId, art_id: artId, rating, comment })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (data.success) {
+                reviewModalInstance.hide();
+                // Check if there are more reviews to do
+                currentPendingReviews.shift();
+                if (currentPendingReviews.length > 0) {
+                    setTimeout(() => showReviewModal(currentPendingReviews[0]), 500);
+                } else {
+                    alert('Thank you for your review!');
+                    // Also refresh the page if we're on the orders page so the review button updates
+                    if (window.location.pathname.includes('/orders')) {
+                        window.location.reload();
+                    }
+                }
+            } else {
+                alert(data.message || 'Error submitting review');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert('Something went wrong.');
+        });
+    }
+</script>

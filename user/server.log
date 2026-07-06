@@ -1,0 +1,4 @@
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+Server is Running on PORT : 6070
+Database connected SuccessFully 
+Reset all online statuses to offline.

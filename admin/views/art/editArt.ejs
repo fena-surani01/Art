@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+
+    <div class="module-title">
+        <h1 class="module-heading">Edit Art</h1>
+    </div>
+
+    <div class="form-card">
+
+        <div id="artMessage"></div>
+
+        <form id="editArtForm">
+
+            <input type="hidden" id="art_id">
+
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" id="title" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea id="description" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select id="category" class="form-control">
+                    <option value="">Select Category</option>
+                    <option value="Portrait">Portrait</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Nature">Nature</option>
+                    <option value="Custom">Custom</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Art Type</label>
+                <select id="art_type" class="form-control">
+                    <option value="">Select Type</option>
+                    <option value="Sketch">Sketch</option>
+                    <option value="Painting">Painting</option>
+                    <option value="Digital Art">Digital Art</option>
+                    <option value="Pencil Art">Pencil Art</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Artist</label>
+                <select id="artist_name" class="form-control">
+                    <option value="">Select Artist</option>
+                    <% artists.forEach(artist => { %>
+                        <option value="<%= artist.artist_name %>"><%= artist.artist_name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Price</label>
+                <input type="number" id="price" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Size</label>
+                <select id="art_size" class="form-control">
+                    <option value="">Select Size</option>
+                    <option value="A3">A3</option>
+                    <option value="A4">A4</option>
+                    <option value="A5">A5</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Quantity / Stock</label>
+                <input type="number" id="stock" class="form-control" placeholder="Enter stock quantity" value="1">
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Update Art
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="/admin/js/art.js"></script>
+
+<%- include('../partials/footer') %>

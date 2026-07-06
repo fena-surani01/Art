@@ -1,0 +1,516 @@
+/* =========================
+   1. GLOBAL CSS
+========================= */
+
+body {
+    margin: 0;
+    background: #F5F7FA;
+    font-family: 'Inter', sans-serif;
+}
+
+
+/* =========================
+   2. TOP NAVBAR
+========================= */
+
+.top-navbar {
+    height: 68px;
+    background: linear-gradient(to right, #1E3A5F, #2C4E73);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-family: 'Caveat', cursive;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-icons i {
+    color: white;
+    font-size: 24px;
+}
+
+
+/* =========================
+   3. SIDEBAR
+========================= */
+
+.sidebar {
+    width: 250px;
+    height: calc(100vh - 70px);
+    position: fixed;
+    top: 70px;
+    left: 0;
+    background: white;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, .08);
+    padding-top: 15px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 25px;
+    margin: 5px 10px;
+    border-radius: 8px;
+    color: #1E3A5F;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    transition: .3s;
+}
+
+.sidebar-link:hover {
+    background: #EEF3F8;
+    color: #1E3A5F;
+}
+
+.sidebar-link i {
+    margin-right: 10px;
+}
+
+
+/* =========================
+   4. ACTIVE SIDEBAR MENU
+========================= */
+
+.active-menu {
+    background: #1E3A5F;
+    color: white !important;
+}
+
+.active-menu i {
+    color: white;
+}
+
+.active-menu:hover {
+    background: #446991;
+    color: white !important;
+}
+
+
+/* =========================
+   5. DROPDOWN PARENT MENU
+========================= */
+
+.sidebar-parent {
+    justify-content: space-between;
+}
+
+.menu-arrow {
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.sidebar-parent:not(.collapsed) {
+    background: #1E3A5F;
+    color: white !important;
+}
+
+.sidebar-parent:not(.collapsed) i {
+    color: white;
+}
+
+.sidebar-parent:not(.collapsed):hover {
+    background: #446991;
+    color: white !important;
+}
+
+
+/* =========================
+   6. SUBMENU
+========================= */
+
+.submenu {
+    background: #F8FAFC;
+    margin: 0 10px 6px;
+    border-radius: 0 0 8px 8px;
+}
+
+.submenu a {
+    display: block;
+    padding: 11px 20px 11px 50px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 15px;
+    transition: .3s;
+}
+
+.submenu a:hover {
+    background: #EEF3F8;
+    color: #1E3A5F;
+}
+
+
+/* =========================
+   7. MAIN CONTENT
+========================= */
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px 35px 90px;
+}
+
+
+/* =========================
+   8. PAGE MODULE HEADING
+========================= */
+
+.module-title {
+    margin-bottom: 30px;
+}
+
+.module-heading {
+    position: relative;
+    display: inline-block;
+    font-family: 'Caveat', cursive;
+    font-size: 50px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 60px;
+}
+
+.module-heading::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 5px;
+    width: 100%;
+    height: 4px;
+    background: #FC787D;
+    border-radius: 10px;
+    transform: rotate(-1deg);
+}
+
+
+/* =========================
+   9. FOOTER
+========================= */
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 250px;
+    right: 0;
+    background: white;
+    padding: 14px;
+    text-align: center;
+    color: #6B7280;
+    border-top: 1px solid #E5E7EB;
+}
+
+/* =========================
+   10. TABLE DESIGN
+========================= */
+
+.table-card {
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .07);
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.table-header h5 {
+    color: #1E3A5F;
+    font-weight: 600;
+    margin: 0;
+}
+
+.add-btn {
+    background: #1E3A5F;
+    color: white;
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.add-btn:hover {
+    background: #2C4E73;
+    color: white;
+}
+
+.artist-table {
+    margin: 0;
+}
+
+.artist-table thead th {
+    background: #EEF3F8;
+    color: #1E3A5F;
+    font-weight: 600;
+    padding: 14px;
+}
+
+.artist-table tbody td {
+    padding: 14px;
+    color: #374151;
+}
+
+.action-btn {
+    border: none;
+    padding: 7px 10px;
+    border-radius: 7px;
+    margin: 0 3px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.edit-btn {
+    background: #E0F2FE;
+    color: #0369A1;
+}
+
+.delete-btn {
+    background: #FEE2E2;
+    color: #B91C1C;
+}
+
+.login-btn {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.edit-btn:hover {
+    background: #BAE6FD;
+}
+
+.delete-btn:hover {
+    background: #FECACA;
+}
+
+.login-btn:hover {
+    background: #BBF7D0;
+}
+
+/* =========================
+   11. FORM DESIGN
+========================= */
+
+.form-card {
+    background: white;
+    border-radius: 18px;
+    padding: 28px;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .07);
+}
+
+.form-label {
+    color: #1E3A5F;
+    font-weight: 600;
+}
+
+.form-control {
+    height: 45px;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: #2C4E73;
+    box-shadow: 0 0 6px rgba(44, 78, 115, .2);
+}
+
+.submit-btn {
+    background: #1E3A5F;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.submit-btn:hover {
+    background: #2C4E73;
+}
+
+
+.active-submenu {
+    background: transparent !important;
+    color: #1E3A5F !important;
+    font-weight: 700;
+}
+
+.submenu a i {
+    font-size: 0.6rem;
+    margin-right: 12px;
+    vertical-align: middle;
+}
+
+.table-card {
+    background: white;
+    padding: 28px;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table thead tr {
+    background: #EEF3F8;
+}
+
+.table th {
+    background: #EEF3F8;
+    color: #1E3A5F;
+    font-weight: 700;
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table td {
+    padding: 18px 16px;
+    color: #082B4C;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.submit-btn {
+    display: inline-block;
+    background: #163B63;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.submit-btn:hover {
+    color: white;
+    background: #0F2F52;
+}
+
+.action-btn {
+    border: none;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 0 4px;
+    display: inline-block;
+}
+
+.edit-btn {
+    background: #E0F3FF;
+    color: #0A8FD3;
+}
+
+.delete-btn {
+    background: #FFE1E5;
+    color: #D92D3A;
+}
+
+.image-preview-box {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.preview-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.table-img {
+    width: 90px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.preview-img {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.spin-anim {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+/* =========================
+   12. RESPONSIVE DESIGN
+========================= */
+.mobile-menu-toggle {
+    display: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1040;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 20px 15px 90px;
+    }
+
+    .footer {
+        left: 0;
+    }
+
+    .mobile-menu-toggle {
+        display: inline-block !important;
+    }
+
+    .module-heading {
+        font-size: 35px;
+    }
+}

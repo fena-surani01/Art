@@ -1,0 +1,405 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    <div class="module-title">
+        <h2 class="module-heading">Manage Custom Artwork</h2>
+    </div>
+
+    <div class="table-card">
+        <style>
+            .artist-table {
+                border-collapse: separate !important;
+                border-spacing: 0 12px !important; 
+            }
+            .artist-table tbody tr {
+                background-color: #ffffff;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.02);
+                transition: all 0.3s ease;
+            }
+            .artist-table tbody td {
+                border-top: 1px solid #f1f2f4;
+                border-bottom: 1px solid #f1f2f4;
+                padding: 16px 12px !important;
+                background-color: transparent !important;
+                vertical-align: middle;
+            }
+            .artist-table tbody td:first-child {
+                border-left: 1px solid #f1f2f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .artist-table tbody td:last-child {
+                border-right: 1px solid #f1f2f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+            /* Premium status indicator styling */
+            .status-indicator-cancelled {
+                background-color: rgba(220, 53, 69, 0.03) !important;
+                opacity: 0.85; 
+            }
+            .status-indicator-cancelled td:first-child {
+                border-left: 5px solid #dc3545 !important;
+            }
+
+            .status-indicator-completed {
+                background-color: rgba(25, 135, 84, 0.04) !important;
+            }
+            .status-indicator-completed td:first-child {
+                border-left: 5px solid #198754 !important;
+            }
+            
+            /* The default state border color (transparent fallback) */
+            .artist-table tbody tr:not(.status-indicator-cancelled):not(.status-indicator-completed) td:first-child {
+                border-left: 5px solid transparent;
+            }
+        </style>
+        
+        <div class="table-header">
+            <h5>All Custom Artwork Requests</h5>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table artist-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th width="10%">Request ID</th>
+                        <th width="15%">Customer</th>
+                        <th width="10%">Ref Image</th>
+                        <th width="15%">Details</th>
+                        <th width="10%"><%= admin && admin.role === 'artist' ? 'Qty' : 'Price/Qty' %></th>
+                        <% if (admin && admin.role === 'artist') { %>
+                            <th width="20%">Status</th>
+                        <% } else { %>
+                            <th width="15%">Artist Status</th>
+                            <th width="15%">Status</th>
+                            <th width="10%">Action</th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(requests && requests.length > 0) { %>
+                        <% requests.forEach(req => { %>
+                            <% 
+                                let rowClass = '';
+                                if (req.status === 'Cancelled') rowClass = 'status-indicator-cancelled';
+                                else if (req.status === 'Completed') rowClass = 'status-indicator-completed';
+                            %>
+                            <tr class="<%= rowClass %>" id="req-row-<%= req.request_id %>">
+                                <td class="fw-bold text-dark">#REQ-<%= req.request_id %></td>
+                                
+                                <td>
+                                    <div class="fw-bold"><%= req.customer_name %></div>
+                                    <div class="small text-muted"><%= req.customer_email %></div>
+                                    <div class="small text-muted mt-1"><i class="bi bi-clock"></i> <%= new Date(req.created_at).toLocaleDateString() %></div>
+                                </td>
+                                
+                                <td>
+                                    <% if (req.reference_image) { %>
+                                        <a href="<%= req.reference_image %>" target="_blank" class="text-decoration-none">
+                                            <img src="<%= req.reference_image %>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" class="shadow-sm border">
+                                        </a>
+                                    <% } else { %>
+                                        <span class="badge bg-light text-muted border">No Image</span>
+                                    <% } %>
+                                </td>
+                                
+                                <td>
+                                    <div><span class="badge bg-secondary mb-1"><%= req.size %></span> <span class="badge bg-dark"><%= req.format %></span></div>
+                                    <button class="btn btn-sm btn-outline-primary mt-2 p-1 px-2" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#descModal<%= req.request_id %>">
+                                        <i class="bi bi-card-text"></i> View Instructions
+                                    </button>
+                                </td>
+                                
+                                <td>
+                                    <% if (admin && admin.role !== 'artist') { %>
+                                        <div class="fw-bold text-success fs-5">₹<%= req.estimated_price %></div>
+                                    <% } %>
+                                    <div class="small text-muted">Qty: <%= req.qty %> Subjects</div>
+                                </td>
+                                
+                                <% if (admin && admin.role === 'artist') { %>
+                                    <td>
+                                        <% if (req.assigned_artist_id === admin.id) { %>
+                                            <div class="d-flex align-items-center">
+                                                <select class="form-select form-select-sm artist-status-select me-2" data-req-id="<%= req.request_id %>" style="width: 140px; font-size: 0.9rem; font-weight: 600;">
+                                                    <option value="Assigned" <%= req.artist_status === 'Assigned' ? 'selected' : '' %>>Assigned</option>
+                                                    <option value="In Progress" <%= req.artist_status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+                                                    <option value="Completed" <%= req.artist_status === 'Completed' ? 'selected' : '' %>>Completed</option>
+                                                </select>
+                                                <button class="btn btn-sm btn-dark fw-bold update-artist-status-btn" data-req-id="<%= req.request_id %>">
+                                                    Update
+                                                </button>
+                                            </div>
+                                        <% } else { %>
+                                            <span class="badge <%= req.artist_status === 'Completed' ? 'bg-success text-white' : (req.artist_status === 'In Progress' ? 'bg-warning text-dark' : 'bg-info text-dark') %> shadow-sm mt-1"><%= req.artist_status %></span>
+                                        <% } %>
+                                    </td>
+                                <% } else { %>
+                                    <td>
+                                        <% if (req.assigned_artist_id) { %>
+                                            <div class="fw-bold text-primary"><i class="bi bi-person-check-fill me-1"></i><%= req.artist_name %></div>
+                                            <span class="badge <%= req.artist_status === 'Completed' ? 'bg-success text-white' : (req.artist_status === 'In Progress' ? 'bg-warning text-dark' : 'bg-info text-dark') %> shadow-sm mt-1"><%= req.artist_status %></span>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-outline-dark fw-bold" data-bs-toggle="modal" data-bs-target="#assignModal<%= req.request_id %>">
+                                                <i class="bi bi-person-plus-fill me-1"></i> Assign
+                                            </button>
+                                        <% } %>
+                                    </td>
+                                    
+                                    <td>
+                                        <select class="form-select form-select-sm status-select" 
+                                                data-req-id="<%= req.request_id %>"
+                                                style="width: 130px; font-weight: 600;">
+                                            <option value="Pending" <%= req.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                            <option value="Processing" <%= req.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                            <option value="Shipped" <%= req.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                            <option value="Delivered" <%= req.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                            <option value="Cancelled" <%= req.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                        </select>
+                                    </td>
+                                    
+                                    <td>
+                                        <button class="btn btn-sm btn-dark w-100 fw-bold update-status-btn" data-req-id="<%= req.request_id %>">
+                                            Update
+                                        </button>
+                                    </td>
+                                <% } %>
+                            </tr>
+
+                            <!-- Description Modal -->
+                            <div class="modal fade" id="descModal<%= req.request_id %>" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header bg-light border-0">
+                                            <h5 class="modal-title fw-bold"><i class="bi bi-card-text me-2"></i>Instructions (REQ-<%= req.request_id %>)</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <h6 class="fw-bold text-muted mb-2 text-uppercase" style="font-size: 0.8rem;">Special Instructions</h6>
+                                            <p style="font-family: 'Caveat', cursive; font-size: 1.3rem; line-height: 1.4;" class="text-dark mb-4"><%= req.description || 'No specific instructions provided.' %></p>
+                                            
+                                            <div class="row g-3 border-top pt-3">
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.8rem;">Shipping Address</h6>
+                                                    <div class="small fw-bold text-dark"><%= req.shipping_address || 'N/A' %></div>
+                                                    <div class="small text-muted"><%= req.shipping_city || '' %>, <%= req.shipping_state || '' %> <%= req.shipping_zip || '' %></div>
+                                                    <div class="small text-muted mt-1"><i class="bi bi-telephone-fill me-1"></i><%= req.phone_number || 'N/A' %></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="fw-bold text-muted mb-1 text-uppercase" style="font-size: 0.8rem;">Payment Info</h6>
+                                                    <div class="small mb-1">
+                                                        <span class="badge bg-light text-dark border"><i class="bi bi-credit-card me-1"></i><%= req.payment_method || 'COD' %></span>
+                                                    </div>
+                                                    <div class="small">
+                                                        <span class="badge <%= req.payment_status === 'Completed' ? 'bg-success' : 'bg-warning text-dark' %>"><%= req.payment_status || 'Pending' %></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0">
+                                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assign Artist Modal (Admin Only) -->
+                            <% if (admin && admin.role !== 'artist') { %>
+                            <div class="modal fade" id="assignModal<%= req.request_id %>" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header bg-dark text-white border-0">
+                                            <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Assign Artist (REQ-<%= req.request_id %>)</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Select Artist</label>
+                                                <select class="form-select" id="artistSelect<%= req.request_id %>">
+                                                    <option value="" selected disabled>Choose an active artist...</option>
+                                                    <% if (artists && artists.length > 0) { %>
+                                                        <% artists.forEach(artist => { %>
+                                                            <option value="<%= artist.artist_id %>"><%= artist.artist_name %></option>
+                                                        <% }) %>
+                                                    <% } else { %>
+                                                        <option value="" disabled>No active artists found.</option>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-success fw-bold assign-artist-btn" data-req-id="<%= req.request_id %>">Confirm Assignment</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-brush text-muted" style="font-size: 3rem;"></i>
+                                <h5 class="mt-3 text-secondary">No Custom Requests Found</h5>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.attachCustomRequestEvents = function() {
+        const updateArtistBtns = document.querySelectorAll('.update-artist-status-btn:not([data-bound="true"])');
+        updateArtistBtns.forEach(btn => {
+            btn.setAttribute('data-bound', 'true');
+            btn.addEventListener('click', () => {
+                const reqId = btn.getAttribute('data-req-id');
+                const select = document.querySelector(`.artist-status-select[data-req-id="${reqId}"]`);
+                const newStatus = select.value;
+                
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch(`/admin/api/custom-requests/update-artist-status/${reqId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artist_status: newStatus })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (window.showActionToast) window.showActionToast('req-succ', 'Success', 'Artist status updated.', 'bi-check-circle-fill', 'success');
+                        setTimeout(() => { if(window.silentPageReload) window.silentPageReload(); }, 1000);
+                    } else {
+                        if (window.showActionToast) window.showActionToast('req-err', 'Error', data.message || 'Failed to update status.', 'bi-exclamation-triangle-fill', 'danger');
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (window.showActionToast) window.showActionToast('req-err2', 'Error', 'An error occurred.', 'bi-exclamation-triangle-fill', 'danger');
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                });
+            });
+        });
+
+        const updateBtns = document.querySelectorAll('.update-status-btn:not([data-bound="true"])');
+        updateBtns.forEach(btn => {
+            btn.setAttribute('data-bound', 'true');
+            btn.addEventListener('click', () => {
+                const reqId = btn.getAttribute('data-req-id');
+                const select = document.querySelector(`.status-select[data-req-id="${reqId}"]`);
+                const newStatus = select.value;
+                
+                const originalText = btn.innerText;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch(`/admin/api/custom-requests/update-status/${reqId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (window.showActionToast) window.showActionToast('req-succ', 'Success', 'Status updated successfully.', 'bi-check-circle-fill', 'success');
+                        setTimeout(() => { if(window.silentPageReload) window.silentPageReload(); }, 1000);
+                    } else {
+                        if (window.showActionToast) window.showActionToast('req-err', 'Error', data.message || 'Failed to update status.', 'bi-exclamation-triangle-fill', 'danger');
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (window.showActionToast) window.showActionToast('req-err2', 'Error', 'An error occurred.', 'bi-exclamation-triangle-fill', 'danger');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
+            });
+        });
+
+        // Artist Assignment logic
+        const assignBtns = document.querySelectorAll('.assign-artist-btn:not([data-bound="true"])');
+        assignBtns.forEach(btn => {
+            btn.setAttribute('data-bound', 'true');
+            btn.addEventListener('click', () => {
+                const reqId = btn.getAttribute('data-req-id');
+                const artistId = document.getElementById(`artistSelect${reqId}`).value;
+
+                if (!artistId) {
+                    if (window.showActionToast) window.showActionToast('req-warn', 'Warning', 'Please select an artist to assign.', 'bi-exclamation-triangle-fill', 'warning');
+                    return;
+                }
+
+                const originalText = btn.innerText;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                fetch(`/admin/api/custom-requests/assign/${reqId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artist_id: artistId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (window.showActionToast) window.showActionToast('assign-succ', 'Assigned', 'Artist assigned successfully.', 'bi-check-circle-fill', 'success');
+                        setTimeout(() => { if(window.silentPageReload) window.silentPageReload(); }, 1000);
+                    } else {
+                        if (window.showActionToast) window.showActionToast('assign-err', 'Error', data.message || 'Failed to assign artist.', 'bi-exclamation-triangle-fill', 'danger');
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (window.showActionToast) window.showActionToast('assign-err2', 'Error', 'An error occurred.', 'bi-exclamation-triangle-fill', 'danger');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                });
+            });
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initial setup
+        window.attachCustomRequestEvents();
+
+        // Blinking logic for new items
+        const newCountStr = localStorage.getItem('admin_unacknowledged_custom_req_count');
+        const newCount = parseInt(newCountStr, 10);
+        if (newCount > 0) {
+            const rows = document.querySelectorAll('.artist-table tbody tr');
+            for (let i = 0; i < Math.min(newCount, rows.length); i++) {
+                rows[i].classList.add('blink-row');
+                // Remove blink after a few seconds
+                setTimeout(() => {
+                    rows[i].classList.remove('blink-row');
+                }, 6000);
+            }
+        }
+    });
+</script>
+
+<style>
+@keyframes highlightBlink {
+    0% { background-color: rgba(253, 126, 20, 0.15); box-shadow: 0 0 15px rgba(253, 126, 20, 0.3); }
+    50% { background-color: #ffffff; box-shadow: none; }
+    100% { background-color: rgba(253, 126, 20, 0.15); box-shadow: 0 0 15px rgba(253, 126, 20, 0.3); }
+}
+.blink-row {
+    animation: highlightBlink 1.5s ease-in-out infinite;
+}
+</style>
+
+<%- include('partials/footer') %>

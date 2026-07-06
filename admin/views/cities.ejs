@@ -1,0 +1,127 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    <div class="module-title d-flex justify-content-between align-items-center">
+        <h2 class="module-heading"><i class="bi bi-pin-map"></i> Manage Cities</h2>
+        <button class="btn btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#addCityModal">
+            <i class="bi bi-plus-lg me-1"></i> Add City
+        </button>
+    </div>
+
+    <div class="table-card mt-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th width="10%">ID</th>
+                        <th width="40%">City Name</th>
+                        <th width="30%">State</th>
+                        <th width="20%" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (cities && cities.length > 0) { %>
+                        <% cities.forEach(city => { %>
+                            <tr>
+                                <td>#<%= city.id %></td>
+                                <td class="fw-bold"><%= city.city_name %></td>
+                                <td><span class="badge bg-secondary"><%= city.state_name %></span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger delete-city-btn" data-id="<%= city.id %>">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">No cities found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add City Modal -->
+<div class="modal fade" id="addCityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="addCityForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Add New City</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">State</label>
+                        <select class="form-select" name="state_id" required>
+                            <option value="" disabled selected>Select a state...</option>
+                            <% states.forEach(state => { %>
+                                <option value="<%= state.id %>"><%= state.state_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">City Name</label>
+                        <input type="text" class="form-control" name="city_name" required placeholder="e.g. Ahmedabad">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark">Add City</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('addCityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    
+    fetch('/admin/api/locations/cities/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            state_id: this.state_id.value,
+            city_name: this.city_name.value 
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message);
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        alert('Error adding city');
+        btn.disabled = false;
+    });
+});
+
+document.querySelectorAll('.delete-city-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!confirm('Are you sure you want to delete this city?')) return;
+        
+        const id = this.getAttribute('data-id');
+        this.disabled = true;
+        
+        fetch(`/admin/api/locations/cities/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) window.location.reload();
+            else { alert(data.message); this.disabled = false; }
+        });
+    });
+});
+</script>
+
+<%- include('partials/footer') %>

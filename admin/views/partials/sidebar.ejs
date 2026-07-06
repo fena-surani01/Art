@@ -1,0 +1,668 @@
+<div class="sidebar" id="adminSidebar">
+
+    <h6 class="sidebar-heading px-3 mt-3 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Main</h6>
+    
+    <!-- Dashboard -->
+    <a href="/admin/dashboard" class="sidebar-link active-menu">
+        <i class="bi bi-speedometer2"></i>
+        Dashboard
+    </a>
+
+    <% if (admin && admin.role !== 'artist') { %>
+        <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">People Management</h6>
+    <% } %>
+
+    <!-- Attendance Menu -->
+    <a class="sidebar-link" href="/admin/attendance">
+        <span>
+            <i class="bi bi-calendar-check"></i>
+            Attendance
+        </span>
+    </a>
+
+    <!-- Artist Menu (Admin Only) -->
+    <% if (admin && admin.role !== 'artist') { %>
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#artistMenu"
+        role="button">
+            <span><i class="bi bi-person-badge"></i> Artist</span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="artistMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/artist/add"><i class="bi bi-circle"></i> Add Artist</a>
+            <a href="/admin/artist/view"><i class="bi bi-circle"></i> View Artist</a>
+        </div>
+    <% } %>
+
+    <% if (admin && admin.role !== 'artist') { %>
+        <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Art Management</h6>
+        
+        <!-- Art Images Menu (Admin Only) -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#imageMenu"
+        role="button">
+            <span><i class="bi bi-images"></i> Art Images</span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="imageMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/art-image/add"><i class="bi bi-circle"></i> Add Images</a>
+            <a href="/admin/art-image/view"><i class="bi bi-circle"></i> View Images</a>
+        </div>
+
+        <!-- Art Menu (Admin Only) -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#artMenu"
+        role="button">
+            <span>
+                <i class="bi bi-palette"></i> Art
+                <span id="art-stock-badge" class="badge bg-danger rounded-pill ms-2" style="display:none; font-size: 0.75rem;">0</span>
+            </span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="artMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/art/add"><i class="bi bi-circle"></i> Add Art</a>
+            <a href="/admin/art/view"><i class="bi bi-circle"></i> View Art</a>
+        </div>
+    <% } %>
+
+    <% if (admin && admin.role !== 'artist') { %>
+        <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Orders & Requests</h6>
+        
+        <!-- Orders Menu (Admin Only) -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#orderMenu"
+        role="button">
+            <span>
+                <i class="bi bi-bag-check"></i> Orders
+                <span id="orders-badge" class="badge bg-danger rounded-pill ms-2" style="display:none; font-size: 0.75rem;">0</span>
+            </span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="orderMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/orders/view"><i class="bi bi-circle"></i> View Orders</a>
+        </div>
+    <% } %>
+
+    <!-- Custom Requests Menu -->
+    <a class="sidebar-link sidebar-parent collapsed"
+    data-bs-toggle="collapse"
+    href="#customReqMenu"
+    role="button">
+        <span>
+            <i class="bi bi-brush"></i> Custom Art
+            <span id="custom-badge" class="badge bg-danger rounded-pill ms-2" style="display:none; font-size: 0.75rem;">0</span>
+        </span>
+        <i class="bi bi-chevron-down menu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="customReqMenu" data-bs-parent="#adminSidebar">
+        <a href="/admin/custom-requests/view"><i class="bi bi-circle"></i> View Requests</a>
+    </div>
+
+
+
+    <% if (admin && admin.role !== 'artist') { %>
+        <!-- Reviews Menu (Admin Only) -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#reviewMenu"
+        role="button">
+            <span>
+                <i class="bi bi-star"></i> Reviews
+                <span id="reviews-badge" class="badge bg-danger rounded-pill ms-2" style="display:none; font-size: 0.75rem;">0</span>
+            </span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="reviewMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/reviews/view"><i class="bi bi-circle"></i> View Reviews</a>
+        </div>
+    <% } %>
+
+    <% if (admin && admin.role !== 'artist') { %>
+        <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Location Management</h6>
+        <!-- Locations Menu (Admin Only) -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#locationMenu"
+        role="button">
+            <span>
+                <i class="bi bi-geo-alt"></i> Locations
+            </span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="locationMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/locations/states"><i class="bi bi-circle"></i> Manage States</a>
+            <a href="/admin/locations/cities"><i class="bi bi-circle"></i> Manage Cities</a>
+        </div>
+    <% } %>
+
+    <h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Account</h6>
+    
+    <!-- Profile Menu -->
+    <a class="sidebar-link" href="/admin/profile">
+        <span>
+            <i class="bi bi-person"></i> Profile
+        </span>
+    </a>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebar = document.getElementById('adminSidebar');
+    if (sidebarToggleBtn && sidebar) {
+        sidebarToggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+    }
+
+    const path = window.location.pathname;
+    
+    const submenuLinks = document.querySelectorAll('.submenu a');
+    let isActiveFound = false;
+    let checkPath = path;
+    if (path.includes('/edit/')) {
+        checkPath = path.replace(/\/edit\/.*$/, '/view');
+    }
+    
+    submenuLinks.forEach(link => {
+        if (link.getAttribute('href') === checkPath || link.getAttribute('href') === path) {
+            isActiveFound = true;
+            link.classList.add('active-submenu');
+            
+            const icon = link.querySelector('i');
+            if (icon) {
+                icon.classList.remove('bi-circle');
+                icon.classList.add('bi-circle-fill');
+            }
+            
+            const collapseMenu = link.closest('.collapse');
+            if (collapseMenu) {
+                collapseMenu.classList.add('show');
+                
+                const parentToggleId = collapseMenu.getAttribute('id');
+                const parentToggle = document.querySelector(`[href="#${parentToggleId}"]`);
+                if (parentToggle) {
+                    parentToggle.classList.remove('collapsed');
+                    parentToggle.classList.add('active-menu');
+                }
+            }
+        }
+    });
+    
+    const dashLink = document.querySelector('a[href="/admin/dashboard"]');
+    if (path === '/admin/dashboard' || path === '/admin/') {
+        if (dashLink) dashLink.classList.add('active-menu');
+    } else {
+        if (dashLink) dashLink.classList.remove('active-menu');
+    }
+});
+
+// --- Global Toast Utilities ---
+(function() {
+    // Inject Toast Container HTML to the body (empty initially)
+    const toastHTML = `
+        <style>
+            .table-pulse-highlight td {
+                background-color: #d1e7dd !important;
+                box-shadow: inset 0 0 0 9999px #d1e7dd !important;
+                transition: all 1s ease-in-out !important;
+            }
+            .table-pulse-highlight-off td {
+                transition: all 1s ease-in-out !important;
+            }
+            
+            /* 3D Stacked Notifications */
+            .toast-container {
+                display: flex;
+                flex-direction: column;
+                perspective: 1000px;
+            }
+            .toast-container .toast {
+                position: relative;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                transform-origin: top center;
+            }
+            
+            /* Enforce z-index so the first toast is ALWAYS on top of the stack */
+            .toast-container .toast:nth-child(1) { z-index: 105; }
+            .toast-container .toast:nth-child(2) { z-index: 104; }
+            .toast-container .toast:nth-child(3) { z-index: 103; }
+            .toast-container .toast:nth-child(4) { z-index: 102; }
+            .toast-container .toast:nth-child(5) { z-index: 101; }
+            
+            /* When NOT hovering over the container, stack them up */
+            .toast-container:not(:hover) .toast:nth-child(2) {
+                margin-top: -75px !important;
+                transform: scale(0.95) translateY(10px);
+                opacity: 0.9;
+                filter: brightness(0.95);
+            }
+            .toast-container:not(:hover) .toast:nth-child(3) {
+                margin-top: -85px !important;
+                transform: scale(0.90) translateY(20px);
+                opacity: 0.7;
+                filter: brightness(0.90);
+            }
+            .toast-container:not(:hover) .toast:nth-child(n+4) {
+                margin-top: -95px !important;
+                transform: scale(0.85) translateY(30px);
+                opacity: 0;
+                pointer-events: none;
+            }
+            
+            /* When hovering over the container, spread them out elegantly */
+            .toast-container:hover .toast {
+                margin-top: 8px !important;
+                transform: scale(1) translateY(0);
+                opacity: 1;
+                filter: brightness(1);
+            }
+            .toast-container:hover .toast:nth-child(1) {
+                margin-top: 0 !important; /* The very first toast stays in place */
+            }
+        </style>
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055; margin-top: 60px;">
+        </div>
+        <div class="action-toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060;">
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+
+    // Premium Double-Chime Notification Sound
+    window.playNotificationSound = function() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            function playNote(freq, startTime, duration) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.4, startTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            }
+            // Ding-Dong (E5 -> C5)
+            playNote(659.25, ctx.currentTime, 0.4); 
+            playNote(523.25, ctx.currentTime + 0.15, 0.6);
+        } catch (e) {
+            console.error("Audio API not supported", e);
+        }
+    };
+
+    window.showNotificationToast = function showNotificationToast(id, title, message, iconClass, colorClass, onClose) {
+        const toastContainer = document.querySelector('.toast-container');
+        if (toastContainer) {
+            let existingToast = document.getElementById('toast-' + id);
+            
+            if (!existingToast) {
+                const newToastHTML = `
+                    <div id="toast-${id}" class="toast overflow-hidden bg-white border-0 shadow-lg animate__animated animate__slideInRight mt-3" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; min-width: 320px;">
+                        <div class="d-flex align-items-stretch">
+                            <div class="bg-${colorClass} text-white d-flex align-items-center justify-content-center px-4">
+                                <i class="${iconClass} fs-3"></i>
+                            </div>
+                            <div class="toast-body p-3 w-100 d-flex flex-column justify-content-center">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong class="text-dark fs-6" style="font-weight: 700;">${title}</strong>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" id="toastCloseBtn-${id}"></button>
+                                </div>
+                                <span class="text-muted" id="toastMessageText-${id}" style="font-size: 0.9rem;"></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                toastContainer.insertAdjacentHTML('beforeend', newToastHTML);
+                existingToast = document.getElementById('toast-' + id);
+                
+                const closeBtn = document.getElementById('toastCloseBtn-' + id);
+                closeBtn.addEventListener('click', () => {
+                    if (onClose) onClose();
+                    else {
+                        if(id === 'orders'){localStorage.removeItem('admin_unacknowledged_order_count'); if(typeof newOrderCount !== 'undefined') newOrderCount=0; const b = document.getElementById('orders-badge'); if(b) b.style.display='none';} 
+                        else if(id === 'cancelled'){localStorage.removeItem('admin_unacknowledged_cancelled_count'); if(typeof unacknowledgedCancelledCount !== 'undefined') unacknowledgedCancelledCount=0;} 
+                        else if(id === 'stock'){localStorage.removeItem('admin_unacknowledged_stock_count'); if(typeof unacknowledgedStockCount !== 'undefined') unacknowledgedStockCount=0;} 
+                        else if(id === 'custom'){localStorage.removeItem('admin_unacknowledged_custom_req_count'); if(typeof unacknowledgedCustomReqCount !== 'undefined') unacknowledgedCustomReqCount=0; const b = document.getElementById('custom-badge'); if(b) b.style.display='none';} 
+                        else if(id === 'reviews'){localStorage.removeItem('admin_unacknowledged_review_count'); if(typeof unacknowledgedReviewCount !== 'undefined') unacknowledgedReviewCount=0; const b = document.getElementById('reviews-badge'); if(b) b.style.display='none';}
+                    }
+                });
+            }
+            
+            const msgEl = document.getElementById('toastMessageText-' + id);
+            msgEl.innerHTML = message;
+            
+            const toast = new bootstrap.Toast(existingToast, { autohide: false });
+            toast.show();
+        }
+    };
+
+    window.showActionToast = function showActionToast(id, title, message, iconClass, colorClass) {
+        const actionContainer = document.querySelector('.action-toast-container');
+        if (actionContainer) {
+            let existingToast = document.getElementById('action-toast-' + id);
+            
+            if (!existingToast) {
+                const newToastHTML = `
+                    <div id="action-toast-${id}" class="toast border-0 shadow-lg animate__animated animate__slideInUp mt-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4000" style="min-width: 300px; border-radius: 8px; overflow: hidden;">
+                        <div class="toast-header bg-${colorClass} text-white border-0">
+                            <i class="${iconClass} me-2 fs-6"></i>
+                            <strong class="me-auto fs-6">${title}</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body bg-white text-dark py-3 px-3 fs-6">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                actionContainer.insertAdjacentHTML('beforeend', newToastHTML);
+                existingToast = document.getElementById('action-toast-' + id);
+            } else {
+                existingToast.querySelector('.toast-body').innerHTML = message;
+            }
+            
+            if (existingToast) {
+                const bsToast = new bootstrap.Toast(existingToast);
+                bsToast.show();
+                existingToast.addEventListener('hidden.bs.toast', () => {
+                    existingToast.remove();
+                });
+            }
+        }
+    };
+})();
+
+// --- Real-time Admin Polling ---
+<% if (admin && admin.role !== 'artist') { %>
+(function() {
+    let lastOrderId = localStorage.getItem('admin_last_order_id') || 'null';
+    let newOrderCount = 0;
+    let unacknowledgedCancelledCount = 0;
+    let unacknowledgedStockCount = 0;
+    let lastCancelledCount = parseInt(localStorage.getItem('admin_last_cancelled_count') || 0);
+    let lastStockCount = parseInt(localStorage.getItem('admin_last_stock_count') || 0);
+    
+    // --- Reviews Polling State ---
+    let lastReviewId = localStorage.getItem('admin_last_review_id') || 'null';
+    let unacknowledgedReviewCount = parseInt(localStorage.getItem('admin_unacknowledged_review_count')) || 0;
+    
+    // --- Custom Requests Polling State ---
+    let lastCustomReqId = localStorage.getItem('admin_last_custom_req_id') || 'null';
+    let unacknowledgedCustomReqCount = parseInt(localStorage.getItem('admin_unacknowledged_custom_req_count')) || 0;
+    
+    function checkNewOrders() {
+        fetch('/admin/api/orders/check-new?lastOrderId=' + lastOrderId)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Permanent out of stock badge
+                    const stockBadge = document.getElementById('art-stock-badge');
+                    if (stockBadge) {
+                        if (data.out_of_stock_count > 0) {
+                            stockBadge.innerText = data.out_of_stock_count + ' Out';
+                            stockBadge.style.display = 'inline-block';
+                        } else {
+                            stockBadge.style.display = 'none';
+                        }
+                    }
+
+                    if (lastOrderId === 'null') {
+                        // First load, just set the baselines
+                        lastOrderId = data.max_id;
+                        localStorage.setItem('admin_last_order_id', lastOrderId);
+                        
+                        lastCancelledCount = data.cancelled_count || 0;
+                        localStorage.setItem('admin_last_cancelled_count', lastCancelledCount);
+                        
+                        lastStockCount = data.out_of_stock_count || 0;
+                        localStorage.setItem('admin_last_stock_count', lastStockCount);
+                        
+                    } else {
+                        let triggeredAudio = false;
+
+                        // Check New Orders
+                        if (data.new_count > 0 && data.max_id > lastOrderId) {
+                            lastOrderId = data.max_id;
+                            localStorage.setItem('admin_last_order_id', lastOrderId);
+                            
+                            newOrderCount += data.new_count;
+                            localStorage.setItem('admin_unacknowledged_order_count', newOrderCount);
+                            localStorage.setItem('admin_unacknowledged_max_id', data.max_id);
+                            
+                            const badge = document.getElementById('orders-badge');
+                            if (badge) {
+                                badge.innerText = newOrderCount;
+                                badge.style.display = 'inline-block';
+                                badge.classList.add('animate__animated', 'animate__heartBeat');
+                                setTimeout(() => badge.classList.remove('animate__animated', 'animate__heartBeat'), 1000);
+                            }
+                            
+                            if(!triggeredAudio) { window.playNotificationSound(); triggeredAudio = true; }
+                            window.showNotificationToast('orders', 'New Orders', newOrderCount > 1 ? `<span class="fw-bold text-success">${newOrderCount} New Orders</span> pending review!` : `Order #ORD-${data.max_id} received!`, 'bi bi-cart-check-fill', 'success');
+                            
+                            if (window.location.pathname === '/admin/orders/view') {
+                                setTimeout(() => { if (window.silentPageReload) window.silentPageReload(); }, 1500);
+                            }
+                        }
+
+                        // Check Cancelled Orders
+                        let currentCancelled = data.cancelled_count || 0;
+                        if (currentCancelled > lastCancelledCount) {
+                            const newCancellations = currentCancelled - lastCancelledCount;
+                            unacknowledgedCancelledCount = parseInt(localStorage.getItem('admin_unacknowledged_cancelled_count') || 0) + newCancellations;
+                            localStorage.setItem('admin_unacknowledged_cancelled_count', unacknowledgedCancelledCount);
+                            
+                            if(!triggeredAudio) { window.playNotificationSound(); triggeredAudio = true; }
+                            window.showNotificationToast('cancelled', 'Order Cancelled', `<span class="fw-bold text-danger">${unacknowledgedCancelledCount} New Order(s)</span> were cancelled!`, 'bi bi-x-circle-fill', 'danger');
+                            
+                            if (window.location.pathname === '/admin/orders/view') {
+                                setTimeout(() => { if (window.silentPageReload) window.silentPageReload(); }, 2000);
+                            }
+                        }
+                        localStorage.setItem('admin_last_cancelled_count', currentCancelled);
+                        lastCancelledCount = currentCancelled;
+
+                        // Check Stock Alerts
+                        let currentStockCount = data.out_of_stock_count || 0;
+                        if (currentStockCount > lastStockCount) {
+                            const newStockOuts = currentStockCount - lastStockCount;
+                            unacknowledgedStockCount = parseInt(localStorage.getItem('admin_unacknowledged_stock_count') || 0) + newStockOuts;
+                            localStorage.setItem('admin_unacknowledged_stock_count', unacknowledgedStockCount);
+                            
+                            if(!triggeredAudio) { window.playNotificationSound(); triggeredAudio = true; }
+                            window.showNotificationToast('stock', 'Out of Stock Alert', `<span class="fw-bold text-warning">${unacknowledgedStockCount} Art Item(s)</span> just ran out of stock!`, 'bi bi-exclamation-triangle-fill', 'warning');
+                            
+                            if (window.location.pathname === '/admin/art/view') {
+                                setTimeout(() => { if (window.silentPageReload) window.silentPageReload(); }, 2000);
+                            }
+                        }
+                        localStorage.setItem('admin_last_stock_count', currentStockCount);
+                        lastStockCount = currentStockCount;
+                    }
+                }
+            })
+        .catch(err => console.error("Error polling orders:", err));
+        
+        // --- Poll for New Reviews ---
+        fetch(`/admin/api/reviews/check-new?lastReviewId=${lastReviewId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.reviews) {
+                if (lastReviewId === 'null') {
+                    if (data.reviews.max_id !== null) {
+                        lastReviewId = data.reviews.max_id;
+                        localStorage.setItem('admin_last_review_id', lastReviewId);
+                    }
+                } else {
+                    if (data.reviews.new_count > 0) {
+                        const newReviews = data.reviews.new_count;
+                        unacknowledgedReviewCount += newReviews;
+                        
+                        lastReviewId = data.reviews.max_id;
+                        localStorage.setItem('admin_last_review_id', lastReviewId);
+                        localStorage.setItem('admin_unacknowledged_review_count', unacknowledgedReviewCount);
+                        
+                        window.showNotificationToast('reviews', 'New Customer Review!', `You have ${newReviews} new review(s)!`, 'bi-star-fill', 'success');
+                        window.playNotificationSound();
+                        
+                        // Update badge
+                        const reviewBadge = document.getElementById('reviews-badge');
+                        if (reviewBadge) {
+                            reviewBadge.textContent = unacknowledgedReviewCount;
+                            reviewBadge.style.display = 'inline-block';
+                            reviewBadge.classList.add('pulse-badge');
+                            setTimeout(() => reviewBadge.classList.remove('pulse-badge'), 2000);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(err => console.error("Error polling reviews:", err));
+        
+        // --- 4. Poll for Custom Requests ---
+        fetch(`/admin/api/custom-requests/check-new?lastRequestId=${lastCustomReqId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.requests) {
+                if (lastCustomReqId === 'null') {
+                    if (data.requests.max_id !== null) {
+                        lastCustomReqId = data.requests.max_id;
+                        localStorage.setItem('admin_last_custom_req_id', lastCustomReqId);
+                    }
+                } else {
+                    if (data.requests.new_count > 0) {
+                        const newReqs = data.requests.new_count;
+                        unacknowledgedCustomReqCount += newReqs;
+                        
+                        lastCustomReqId = data.requests.max_id;
+                        localStorage.setItem('admin_last_custom_req_id', lastCustomReqId);
+                        localStorage.setItem('admin_unacknowledged_custom_req_count', unacknowledgedCustomReqCount);
+                        
+                        window.showNotificationToast('custom', 'New Custom Art Request!', `You have ${newReqs} new request(s)!`, 'bi-brush-fill', 'primary');
+                        window.playNotificationSound();
+                        
+                        // Update badge
+                        const customBadge = document.getElementById('custom-badge');
+                        if (customBadge) {
+                            customBadge.textContent = unacknowledgedCustomReqCount;
+                            customBadge.style.display = 'inline-block';
+                            customBadge.classList.add('pulse-badge');
+                            setTimeout(() => customBadge.classList.remove('pulse-badge'), 2000);
+                        }
+                        
+                        if (window.location.pathname === '/admin/custom-requests/view') {
+                            setTimeout(() => { if (window.silentPageReload) window.silentPageReload(); }, 2000);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(err => console.error("Error polling custom requests:", err));
+    }
+    
+    // Check every 5 seconds
+    setInterval(checkNewOrders, 5000);
+    // Initial check on load
+    setTimeout(checkNewOrders, 1000);
+    
+    // Page load persistence handler
+    document.addEventListener('DOMContentLoaded', () => {
+        const unacknowledgedCount = localStorage.getItem('admin_unacknowledged_order_count');
+        const unacknowledgedMaxId = localStorage.getItem('admin_unacknowledged_max_id');
+        
+        if (window.location.pathname === '/admin/orders/view') {
+            const badge = document.getElementById('orders-badge');
+            if (badge) badge.style.display = 'none';
+            newOrderCount = 0;
+            localStorage.removeItem('admin_unacknowledged_order_count');
+            
+            // Note: Since they are on the orders page, we could technically clear cancelled unacknowledged count too.
+            // But we let them manually close the toast for cancellations just in case.
+            
+            // Check if we need to blink a new item
+            if (unacknowledgedCount && parseInt(unacknowledgedCount) > 0) {
+                const count = parseInt(unacknowledgedCount);
+                const rows = document.querySelectorAll('.artist-table tbody tr');
+                for (let i = 0; i < Math.min(count, rows.length); i++) {
+                    const row = rows[i];
+                    // Apply smooth, slow premium pulse via JS class toggling and CSS transitions
+                    row.classList.add('table-pulse-highlight-off'); // Ensure transition is applied
+                    let blinks = 0;
+                    const blinkInterval = setInterval(() => {
+                        row.classList.toggle('table-pulse-highlight');
+                        blinks++;
+                        if (blinks >= 6) {
+                            clearInterval(blinkInterval);
+                            row.classList.remove('table-pulse-highlight');
+                            row.classList.remove('table-pulse-highlight-off');
+                        }
+                    }, 1200); // 1.2s per fade
+                }
+            }
+        } else if (unacknowledgedCount && parseInt(unacknowledgedCount) > 0) {
+            newOrderCount = parseInt(unacknowledgedCount);
+            const badge = document.getElementById('orders-badge');
+            if (badge) {
+                badge.innerText = newOrderCount;
+                badge.style.display = 'inline-block';
+            }
+            setTimeout(() => { window.showNotificationToast('orders', 'New Orders', newOrderCount > 1 ? `<span class="fw-bold text-success">${newOrderCount} New Orders</span> pending review!` : `Order #ORD-${unacknowledgedMaxId} received!`, 'bi bi-cart-check-fill', 'success'); }, 500);
+        }
+        
+        // Restore unacknowledged cancelled toast on page load
+        const storedUnackCancelled = localStorage.getItem('admin_unacknowledged_cancelled_count');
+        if (storedUnackCancelled && parseInt(storedUnackCancelled) > 0) {
+            unacknowledgedCancelledCount = parseInt(storedUnackCancelled);
+            setTimeout(() => { window.showNotificationToast('cancelled', 'Order Cancelled', `<span class="fw-bold text-danger">${unacknowledgedCancelledCount} New Order(s)</span> were cancelled!`, 'bi bi-x-circle-fill', 'danger'); }, 500);
+        }
+        
+        // Restore unacknowledged stock out toast on page load
+        const storedUnackStock = localStorage.getItem('admin_unacknowledged_stock_count');
+        if (storedUnackStock && parseInt(storedUnackStock) > 0) {
+            unacknowledgedStockCount = parseInt(storedUnackStock);
+            setTimeout(() => { window.showNotificationToast('stock', 'Out of Stock Alert', `<span class="fw-bold text-warning">${unacknowledgedStockCount} Art Item(s)</span> just ran out of stock!`, 'bi bi-exclamation-triangle-fill', 'warning'); }, 500);
+        }
+        
+        // Restore/Clear Custom Requests
+        if (window.location.pathname === '/admin/custom-requests/view') {
+            const customBadge = document.getElementById('custom-badge');
+            if (customBadge) customBadge.style.display = 'none';
+            unacknowledgedCustomReqCount = 0;
+            // Delay clearing localStorage slightly so customRequests.ejs can read it for blinking logic
+            setTimeout(() => {
+                localStorage.removeItem('admin_unacknowledged_custom_req_count');
+            }, 1000);
+        } else if (unacknowledgedCustomReqCount > 0) {
+            const customBadge = document.getElementById('custom-badge');
+            if (customBadge) {
+                customBadge.textContent = unacknowledgedCustomReqCount;
+                customBadge.style.display = 'inline-block';
+            }
+            setTimeout(() => { window.showNotificationToast('custom', 'New Custom Art Request!', `You have ${unacknowledgedCustomReqCount} new request(s)!`, 'bi-brush-fill', 'primary'); }, 500);
+        }
+
+        // Restore/Clear Reviews
+        if (window.location.pathname === '/admin/reviews/view') {
+            const reviewBadge = document.getElementById('reviews-badge');
+            if (reviewBadge) reviewBadge.style.display = 'none';
+            unacknowledgedReviewCount = 0;
+            localStorage.removeItem('admin_unacknowledged_review_count');
+        } else if (unacknowledgedReviewCount > 0) {
+            const reviewBadge = document.getElementById('reviews-badge');
+            if (reviewBadge) {
+                reviewBadge.textContent = unacknowledgedReviewCount;
+                reviewBadge.style.display = 'inline-block';
+            }
+            setTimeout(() => { window.showNotificationToast('reviews', 'New Customer Review!', `You have ${unacknowledgedReviewCount} new review(s)!`, 'bi-star-fill', 'success'); }, 500);
+        }
+    });
+})();
+<% } %>
+</script>

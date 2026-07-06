@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+
+    <div class="module-title">
+        <h1 class="module-heading">View Artists</h1>
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-header">
+            <!-- <h5>Artist List</h5> -->
+
+            <a href="/admin/artist/add" class="add-btn">
+                <i class="bi bi-plus-circle"></i> Add Artist
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table artist-table align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Artist Name</th>
+                        <th>Email</th>
+                        <th>Gender</th>
+                        <th>Description</th>
+                        <th>Created Date</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="artistTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Loading artists...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/admin/js/artist.js"></script>
+
+<%- include('../partials/footer') %>

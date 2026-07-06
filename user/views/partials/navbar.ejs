@@ -1,0 +1,168 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow sticky-top">
+    <div class="container">
+
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <!-- <img src="/images/fenaria-logo.png" alt="Fenaria Logo" class="logo"> -->
+            <span class="ms-2 brand-name">Fenaria ☘︎˖</span>
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/home">Home</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/artists">Artists</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/custom-art">Custom Art</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/orders">Orders</a>
+                </li>
+
+            </ul>
+
+            <div class="d-flex">
+                <div class="nav-icons">
+
+                    <div class="dropdown d-inline-block">
+                        <a href="#" class="text-white text-decoration-none" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3" aria-labelledby="profileDropdown" style="min-width: 200px; border-radius: 12px;">
+                            <li><h6 class="dropdown-header fw-bold text-dark fs-6"><%= typeof user !== 'undefined' && user ? user.name : 'My Profile' %></h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 fw-semibold text-secondary" href="/user/orders"><i class="bi bi-box-seam me-2 text-primary"></i> My Orders</a></li>
+                        </ul>
+                    </div>
+
+                    <a href="/user/cart" class="position-relative text-white">
+                        <i class="bi bi-cart"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow" id="cart-count-badge" style="font-size: 0.65rem; display: none;">
+                            0
+                        </span>
+                    </a>
+
+                    <a href="/user/logout" class="text-white">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</nav>
+
+<style>
+.navbar-nav .nav-link {
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 5px;
+}
+.navbar-nav .nav-link:hover {
+    opacity: 1;
+}
+.navbar-nav .nav-link.active {
+    opacity: 1;
+    font-weight: 600;
+    border-bottom-color: #fff;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Navbar active state logic
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        const href = link.getAttribute('href');
+        if (currentPath === href || (currentPath.startsWith('/user/art') && href === '/user/artists' && !currentPath.includes('custom-art'))) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+
+<script>
+async function updateCartCount() {
+    try {
+        const response = await fetch('/api/cart/count');
+        const data = await response.json();
+        const badge = document.getElementById('cart-count-badge');
+        if (data.success && data.count > 0) {
+            badge.innerText = data.count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (e) {
+        console.error('Error fetching cart count', e);
+    }
+}
+document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
+
+<!-- Dynamic Favicon Generator -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const setFavicon = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#212529';
+            ctx.beginPath();
+            ctx.arc(32, 32, 32, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 38px Caveat, cursive';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('F', 22, 34);
+            
+            ctx.fillStyle = '#28a745';
+            ctx.font = '18px sans-serif';
+            ctx.fillText('☘︎', 44, 28);
+            
+            ctx.fillStyle = '#ffc107';
+            ctx.font = '16px sans-serif';
+            ctx.fillText('˖', 52, 42);
+
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.href = canvas.toDataURL('image/png');
+            
+            const existing = document.querySelector('link[rel="icon"]');
+            if (existing) existing.remove();
+            
+            document.head.appendChild(link);
+        };
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(setFavicon);
+        } else {
+            setTimeout(setFavicon, 500);
+        }
+    });
+</script>

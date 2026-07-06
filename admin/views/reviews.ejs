@@ -1,0 +1,147 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    <div class="module-title">
+        <h2 class="module-heading">Manage Reviews</h2>
+    </div>
+
+    <div class="table-card">
+        <style>
+            /* Transform standard table into a premium rounded card list */
+            .artist-table {
+                border-collapse: separate !important;
+                border-spacing: 0 12px !important; /* Space between rows */
+            }
+            .artist-table tbody tr {
+                background-color: #ffffff;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.02); /* Soft shadow */
+                transition: all 0.3s ease;
+            }
+            .artist-table tbody td {
+                border-top: 1px solid #f1f2f4;
+                border-bottom: 1px solid #f1f2f4;
+                padding: 16px 12px !important;
+                background-color: transparent !important;
+            }
+            .artist-table tbody td:first-child {
+                border-left: 1px solid #f1f2f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .artist-table tbody td:last-child {
+                border-right: 1px solid #f1f2f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            .star-rating i {
+                color: #ffc107;
+                font-size: 1.1rem;
+            }
+            .star-rating i.empty {
+                color: #e4e5e9;
+            }
+        </style>
+        
+        <div class="table-header">
+            <h5>All Customer Reviews</h5>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table artist-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Art</th>
+                        <th>Customer</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                        <th>Approved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (reviews && reviews.length > 0) { %>
+                        <% reviews.forEach(review => { %>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="<%= review.art_image || '/images/default-art.jpg' %>" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;" class="me-3 shadow-sm">
+                                        <div>
+                                            <div class="fw-bold"><%= review.art_title %></div>
+                                            <div class="small text-muted">Order #ORD-<%= review.order_id %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="fw-bold"><%= review.customer_name %></td>
+                                <td>
+                                    <div class="star-rating">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                            <i class="bi bi-star-fill <%= i > review.rating ? 'empty' : '' %>"></i>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (review.comment) { %>
+                                        <span class="fst-italic text-secondary small">"<%= review.comment %>"</span>
+                                    <% } else { %>
+                                        <span class="text-muted small">-</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-calendar3 me-1"></i><%= new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input approve-switch" type="checkbox" role="switch" data-id="<%= review.review_id %>" <%= review.is_approved ? 'checked' : '' %>>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-chat-left-dots" style="font-size: 2rem;"></i>
+                                <div class="mt-2">No reviews found.</div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('.approve-switch').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const reviewId = this.getAttribute('data-id');
+            const isApproved = this.checked;
+            
+            fetch(`/admin/api/reviews/approve/${reviewId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_approved: isApproved })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    if (window.showActionToast) window.showActionToast('rev-err', 'Error', 'Failed to update status', 'bi-exclamation-triangle-fill', 'danger');
+                    this.checked = !isApproved; // revert
+                } else {
+                    if (window.showActionToast) window.showActionToast('rev-succ', 'Success', 'Review status updated', 'bi-check-circle-fill', 'success');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (window.showActionToast) window.showActionToast('rev-err2', 'Error', 'Error updating status', 'bi-exclamation-triangle-fill', 'danger');
+                this.checked = !isApproved; // revert
+            });
+        });
+    });
+</script>
+</body>
+</html>

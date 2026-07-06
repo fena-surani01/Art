@@ -1,0 +1,4 @@
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+Server is Running on the PORT : 5070
+Database connected SuccessFully 
+Attendance tables ready.

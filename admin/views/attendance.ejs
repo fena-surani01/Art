@@ -1,0 +1,683 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<style>
+    .attendance-card {
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .btn-checkin {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        transition: transform 0.2s;
+    }
+    .btn-checkin:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-checkout {
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+        color: white;
+        border: none;
+        transition: transform 0.2s;
+    }
+    .btn-checkout:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+    }
+
+    .btn-leave {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+    }
+    
+    .time-display {
+        font-family: 'Inter', sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -1px;
+    }
+
+    .progress-bar-custom {
+        height: 12px;
+        border-radius: 6px;
+        background-color: #e2e8f0;
+        overflow: hidden;
+        margin-top: 15px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        width: 0%;
+        transition: width 1s linear;
+    }
+    .time-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-calendar-check text-primary me-2"></i> Attendance
+            </h2>
+            <p class="text-muted mb-0 mt-1">Manage daily attendance and work logs</p>
+        </div>
+    </div>
+
+    <% if (admin && admin.role === 'artist') { %>
+        <!-- ARTIST VIEW -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card attendance-card p-0 overflow-hidden bg-dark text-white shadow-lg border-0">
+                    <div class="row g-0">
+                        <!-- Left Side: Stats & Progress -->
+                        <div class="col-md-7 p-3 d-flex flex-column justify-content-center border-end border-secondary border-opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="text-uppercase text-white-50 fw-bold mb-0" style="letter-spacing: 1px; font-size: 0.8rem;">Today (Flexible Timings)</h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-light rounded-pill dropdown-toggle px-2 py-0" style="font-size: 0.8rem;" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-calendar2-minus"></i> Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 dropdown-menu-dark">
+                                        <li><button class="dropdown-item fw-bold text-warning" onclick="requestLeave('half')">Mark Half Day</button></li>
+                                        <li><button class="dropdown-item fw-bold text-danger" onclick="requestLeave('full')">Mark Full Leave</button></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mb-3 mt-1">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fs-5 fw-bold" id="worked-time-text">0h 0m</span>
+                                    <span class="text-white-50 fw-semibold align-self-end mb-1" style="font-size: 0.8rem;">Remaining: <span class="text-light" id="remaining-time-text">8h 30m</span></span>
+                                </div>
+                                <div class="progress" style="height: 10px; background-color: #334155; border-radius: 5px; overflow: hidden;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" id="work-progress" style="width: 0%; border-radius: 5px; box-shadow: 0 0 10px rgba(13,202,240,0.5);"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-25">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-info bg-opacity-25 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                                        <i class="bi bi-clock-history text-info fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-white-50 text-uppercase fw-bold" style="letter-spacing: 0.5px; font-size: 0.7rem;">Avg Hrs / Day</div>
+                                        <div class="fw-bold fs-6">8h 30m Goal</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Clock & Actions -->
+                        <div class="col-md-5 p-3 d-flex flex-column align-items-center justify-content-center" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                            <!-- Live Clock -->
+                            <div class="time-display text-white mb-1" id="live-clock" style="font-size: 2rem; text-shadow: 0 2px 5px rgba(0,0,0,0.3); letter-spacing: -0.5px;">00:00:00</div>
+                            <div class="text-info fw-bold mb-2" id="live-date" style="font-size: 0.8rem;"></div>
+
+                            <div class="mb-2 px-3 py-1 rounded-pill bg-dark bg-opacity-50 border border-secondary border-opacity-25 shadow-sm">
+                                <span class="fw-bold" style="font-size: 0.75rem;" id="status-text">Loading status...</span>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex flex-column gap-2 w-100 px-lg-4">
+                                <button class="btn rounded-pill shadow-lg fw-bold d-flex align-items-center justify-content-center gap-2" id="btnCheckIn" disabled style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; font-size: 0.9rem; padding: 6px 12px;">
+                                    <i class="bi bi-fingerprint fs-6"></i> Web Clock-In
+                                </button>
+                                <button class="btn rounded-pill shadow-lg fw-bold d-flex align-items-center justify-content-center gap-2 text-dark" id="btnCheckOut" disabled style="background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%); border: none; font-size: 0.9rem; padding: 6px 12px;">
+                                    <i class="bi bi-cup-hot-fill fs-6"></i> Take a Break
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card attendance-card p-0 overflow-hidden bg-white shadow-sm border-0">
+                    <div class="card-header p-4 border-bottom bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-calendar-range me-2 text-primary"></i>Logs & Requests</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="date" id="artistDateFilter" class="form-control bg-light border-0 shadow-sm text-dark px-3 py-2" value="<%= filterDate %>" onchange="loadArtistWeek(this.value)" style="width: auto; cursor: pointer;">
+                            <button class="btn btn-primary shadow-sm px-3 py-2 d-flex align-items-center" onclick="loadArtistWeek(document.getElementById('artistDateFilter').value)">
+                                <i class="bi bi-arrow-clockwise me-2"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 text-uppercase text-muted small fw-bold" style="letter-spacing: 1px;">Date</th>
+                                    <th class="py-3 text-uppercase text-muted small fw-bold" style="letter-spacing: 1px;">Status / Visual</th>
+                                    <th class="py-3 text-uppercase text-muted small fw-bold" style="letter-spacing: 1px;"><i class="bi bi-clock-fill text-primary me-1"></i> Effective Hours</th>
+                                    <th class="py-3 text-uppercase text-muted small fw-bold" style="letter-spacing: 1px;"><i class="bi bi-cup-hot-fill text-warning me-1"></i> Break Time</th>
+                                    <th class="py-3 text-uppercase text-muted small fw-bold" style="letter-spacing: 1px;"><i class="bi bi-hourglass-split text-info me-1"></i> Total Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="artistWeeklyTableBody" class="border-top-0">
+                                <% if (records && records.length > 0) { %>
+                                    <% records.forEach(record => { %>
+                                        <tr class="border-bottom">
+                                            <td class="fw-bold ps-4 py-3 text-dark">
+                                                <%= new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) %>
+                                            </td>
+                                            <td class="py-3">
+                                                <% if (record.status === 'Present') { %>
+                                                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Present</span>
+                                                <% } else if (record.status === 'Absent' || record.status === 'Leave') { %>
+                                                    <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2"><i class="bi bi-x-circle-fill me-1"></i> <%= record.status %></span>
+                                                <% } else if (record.status === 'Half Day') { %>
+                                                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2"><i class="bi bi-brightness-alt-high-fill me-1"></i> Half Day</span>
+                                                <% } else { %>
+                                                    <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2"><i class="bi bi-clock me-1"></i> Upcoming</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="fw-bold py-3">
+                                                <% 
+                                                    const now = new Date();
+                                                    let addWork = 0;
+                                                    let addBreak = 0;
+                                                    if (record.last_check_in) {
+                                                        addWork = Math.floor((now - new Date(record.last_check_in)) / 1000);
+                                                    }
+                                                    if (record.last_break_time) {
+                                                        addBreak = Math.floor((now - new Date(record.last_break_time)) / 1000);
+                                                    }
+                                                    
+                                                    let totWork = (record.total_worked_seconds || 0) + addWork;
+                                                    let totBreak = (record.total_break_seconds || 0) + addBreak;
+                                                    
+                                                    let hrs = Math.floor(totWork / 3600);
+                                                    let mins = Math.floor((totWork % 3600) / 60);
+                                                    
+                                                    let bHrs = Math.floor(totBreak / 3600);
+                                                    let bMins = Math.floor((totBreak % 3600) / 60);
+                                                    
+                                                    let totSecs = totWork + totBreak;
+                                                    let tHrs = Math.floor(totSecs / 3600);
+                                                    let tMins = Math.floor((totSecs % 3600) / 60);
+                                                %>
+                                                <span class="text-primary fs-6"><%= hrs %>h</span> <span class="text-muted small"><%= mins %>m</span>
+                                            </td>
+                                            <td class="fw-bold py-3">
+                                                <span class="text-warning fs-6"><%= bHrs %>h</span> <span class="text-muted small"><%= bMins %>m</span>
+                                            </td>
+                                            <td class="fw-bold py-3">
+                                                <span class="text-info fs-6"><%= tHrs %>h</span> <span class="text-muted small"><%= tMins %>m</span>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="5" class="text-center text-muted py-5">No attendance records found.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentStatus = null;
+            let lastCheckInTime = null;
+            let totalWorkedSeconds = 0;
+            const TOTAL_REQUIRED_SECONDS = 8.5 * 3600; // 8.5 hours
+            
+            // Format timer
+            function formatTimeDiff(seconds) {
+                let h = Math.floor(seconds / 3600);
+                let m = Math.floor((seconds % 3600) / 60);
+                return `${h}h ${m}m`;
+            }
+
+            // Live Clock Update
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('live-clock').textContent = now.toLocaleTimeString([], { hour12: true });
+                document.getElementById('live-date').textContent = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Update worked time if checked in
+                if (lastCheckInTime) {
+                    const diffSeconds = Math.floor((now.getTime() - lastCheckInTime.getTime()) / 1000);
+                    const currentTotal = totalWorkedSeconds + diffSeconds;
+                    
+                    document.getElementById('worked-time-text').textContent = formatTimeDiff(currentTotal);
+                    
+                    let remaining = TOTAL_REQUIRED_SECONDS - currentTotal;
+                    if (remaining < 0) remaining = 0;
+                    document.getElementById('remaining-time-text').textContent = formatTimeDiff(remaining);
+
+                    let pct = (currentTotal / TOTAL_REQUIRED_SECONDS) * 100;
+                    if(pct > 100) pct = 100;
+                    document.getElementById('work-progress').style.width = pct + '%';
+                }
+            }, 1000);
+
+            function loadLiveStatus() {
+                fetch('/admin/api/attendance/live-status')
+                .then(res => res.json())
+                .then(data => {
+                    const btnIn = document.getElementById('btnCheckIn');
+                    const btnOut = document.getElementById('btnCheckOut');
+                    const statusText = document.getElementById('status-text');
+                    
+                    if(data.success && data.record) {
+                        currentStatus = data.record;
+                        totalWorkedSeconds = data.record.total_worked_seconds || 0;
+                        
+                        if (data.record.status === 'Leave' || data.record.status === 'Absent') {
+                            btnIn.disabled = true;
+                            btnOut.disabled = true;
+                            statusText.innerHTML = `<span class="text-danger">On Leave Today</span>`;
+                            lastCheckInTime = null;
+                        }
+                        else if (data.record.last_check_in) {
+                            // Currently Checked In
+                            lastCheckInTime = new Date(data.record.last_check_in);
+                            btnIn.disabled = true;
+                            btnOut.disabled = false;
+                            statusText.innerHTML = `<span class="text-success"><i class="bi bi-circle-fill" style="font-size:0.6rem;"></i> Currently Working</span>`;
+                        } else {
+                            // On Break
+                            lastCheckInTime = null;
+                            btnIn.disabled = false;
+                            btnOut.disabled = true;
+                            statusText.innerHTML = `<span class="text-warning"><i class="bi bi-pause-circle-fill"></i> On Break</span>`;
+                        }
+                        
+                        // Static Update for progress if not checked in
+                        if(!lastCheckInTime) {
+                            document.getElementById('worked-time-text').textContent = formatTimeDiff(totalWorkedSeconds);
+                            let remaining = TOTAL_REQUIRED_SECONDS - totalWorkedSeconds;
+                            if (remaining < 0) remaining = 0;
+                            document.getElementById('remaining-time-text').textContent = formatTimeDiff(remaining);
+                            let pct = (totalWorkedSeconds / TOTAL_REQUIRED_SECONDS) * 100;
+                            if(pct > 100) pct = 100;
+                            document.getElementById('work-progress').style.width = pct + '%';
+                        }
+
+                    } else {
+                        // Not checked in at all today
+                        btnIn.disabled = false;
+                        btnOut.disabled = true;
+                        statusText.innerHTML = "Not checked in yet.";
+                        lastCheckInTime = null;
+                        totalWorkedSeconds = 0;
+                    }
+                    if (typeof updateGlobalStatus === 'function') updateGlobalStatus();
+                });
+            }
+
+            // Initial Load
+            loadLiveStatus();
+
+            document.getElementById('btnCheckIn').addEventListener('click', function() {
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                this.disabled = true;
+                fetch('/admin/api/attendance/check-in', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            if(window.showActionToast) window.showActionToast('att-in', 'Success', 'Checked in! Welcome back.', 'bi-play-fill', 'success');
+                            loadLiveStatus();
+                            loadArtistWeek(document.getElementById('artistDateFilter').value);
+                        }
+                        this.innerHTML = '<i class="bi bi-fingerprint fs-4"></i> Web Clock-In';
+                    });
+            });
+
+            document.getElementById('btnCheckOut').addEventListener('click', function() {
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                this.disabled = true;
+                fetch('/admin/api/attendance/check-out', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            if(window.showActionToast) window.showActionToast('att-out', 'Break Time', 'You are now on break.', 'bi-pause-fill', 'warning');
+                            loadLiveStatus();
+                            loadArtistWeek(document.getElementById('artistDateFilter').value);
+                        }
+                        this.innerHTML = '<i class="bi bi-cup-hot-fill fs-4"></i> Take a Break';
+                    });
+            });
+
+            function requestLeave(type) {
+                if(confirm(`Are you sure you want to mark a ${type} leave for today?`)) {
+                    fetch('/admin/api/attendance/leave', { 
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            if(window.showActionToast) window.showActionToast('att-leave', 'Success', 'Leave status updated!', 'bi-check-circle', 'success');
+                            loadLiveStatus();
+                            loadArtistWeek(document.getElementById('artistDateFilter').value);
+                        }
+                    });
+                }
+            }
+
+            function loadArtistWeek(dateStr) {
+                fetch('/admin/api/attendance/weekly?date=' + dateStr)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        const tbody = document.getElementById('artistWeeklyTableBody');
+                        tbody.innerHTML = '';
+                        if(data.records && data.records.length > 0) {
+                            data.records.forEach(r => {
+                                let badgeHtml = '';
+                                if (r.status === 'Present') {
+                                    badgeHtml = '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Present</span>';
+                                } else if (r.status === 'Absent' || r.status === 'Leave') {
+                                    badgeHtml = `<span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2"><i class="bi bi-x-circle-fill me-1"></i> ${r.status}</span>`;
+                                } else if (r.status === 'Half Day') {
+                                    badgeHtml = '<span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2"><i class="bi bi-brightness-alt-high-fill me-1"></i> Half Day</span>';
+                                } else {
+                                    badgeHtml = '<span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2"><i class="bi bi-clock me-1"></i> Upcoming</span>';
+                                }
+
+                                const now = new Date();
+                                let addWork = 0;
+                                let addBreak = 0;
+                                if (r.last_check_in) {
+                                    addWork = Math.floor((now - new Date(r.last_check_in)) / 1000);
+                                }
+                                if (r.last_break_time) {
+                                    addBreak = Math.floor((now - new Date(r.last_break_time)) / 1000);
+                                }
+
+                                let totWork = (r.total_worked_seconds || 0) + addWork;
+                                let totBreak = (r.total_break_seconds || 0) + addBreak;
+
+                                let hrs = Math.floor(totWork / 3600);
+                                let mins = Math.floor((totWork % 3600) / 60);
+                                
+                                let bHrs = Math.floor(totBreak / 3600);
+                                let bMins = Math.floor((totBreak % 3600) / 60);
+
+                                let totSecs = totWork + totBreak;
+                                let tHrs = Math.floor(totSecs / 3600);
+                                let tMins = Math.floor((totSecs % 3600) / 60);
+
+                                const dateObj = new Date(r.date);
+                                const dateString = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+                                
+                                tbody.innerHTML += `
+                                    <tr class="border-bottom">
+                                        <td class="fw-bold ps-4 py-3 text-dark">${dateString}</td>
+                                        <td class="py-3">${badgeHtml}</td>
+                                        <td class="fw-bold py-3">
+                                            <span class="text-primary fs-6">${hrs}h</span> <span class="text-muted small">${mins}m</span>
+                                        </td>
+                                        <td class="fw-bold py-3">
+                                            <span class="text-warning fs-6">${bHrs}h</span> <span class="text-muted small">${bMins}m</span>
+                                        </td>
+                                        <td class="fw-bold py-3">
+                                            <span class="text-info fs-6">${tHrs}h</span> <span class="text-muted small">${tMins}m</span>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-5">No attendance records found.</td></tr>';
+                        }
+                    }
+                });
+            }
+        </script>
+
+    <% } else { %>
+        <!-- ADMIN VIEW -->
+        <div class="row g-4 mb-4">
+            <!-- Filter & Overview -->
+            <div class="col-12">
+                <div class="card attendance-card p-3 bg-light">
+                    <div class="d-flex align-items-center gap-3">
+                        <label class="fw-bold">Date:</label>
+                        <input type="date" id="adminDateFilter" class="form-control w-auto" value="<%= filterDate %>" onchange="loadAdminDay(this.value)">
+                        
+                        <div class="ms-auto d-flex gap-4 text-center">
+                            <div><div class="fs-4 fw-bold text-primary" id="adminStatTotal"><%= overview ? overview.total_artists : 0 %></div><small class="text-muted text-uppercase fw-bold">Total Artists</small></div>
+                            <div><div class="fs-4 fw-bold text-success" id="adminStatPresent"><%= overview ? overview.present_count : 0 %></div><small class="text-muted text-uppercase fw-bold">Present</small></div>
+                            <div><div class="fs-4 fw-bold text-danger" id="adminStatAbsent"><%= overview ? overview.absent_count : 0 %></div><small class="text-muted text-uppercase fw-bold">Absent/Leave</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Table -->
+            <div class="col-12">
+                <div class="card attendance-card p-0">
+                    <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Artist Log for <span id="adminLogDateTitle"><%= new Date(filterDate).toLocaleDateString() %></span></h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary fw-bold px-3 rounded-pill me-2" onclick="loadAdminDay(document.getElementById('adminDateFilter').value)">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                            <button class="btn btn-sm btn-primary fw-bold px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+                                <i class="bi bi-plus-circle me-1"></i> Override Status
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Artist Name</th>
+                                    <th>Status</th>
+                                    <th>Current State</th>
+                                    <th>Total Worked</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminDailyTableBody">
+                                <% if (records && records.length > 0) { %>
+                                    <% records.forEach(record => { %>
+                                        <tr>
+                                            <td class="ps-4 fw-bold">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; font-weight: bold;">
+                                                        <%= record.artist_name.charAt(0).toUpperCase() %>
+                                                    </div>
+                                                    <%= record.artist_name %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge <%= record.status === 'Present' ? 'bg-success text-white' : (record.status === 'Half Day' ? 'bg-warning text-dark' : 'bg-danger text-white') %>">
+                                                    <%= record.status %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <% if (record.last_check_in) { %>
+                                                    <span class="text-success fw-bold"><i class="bi bi-circle-fill" style="font-size:0.6rem;"></i> Working</span>
+                                                <% } else if (record.status === 'Present' || record.status === 'Half Day') { %>
+                                                    <span class="text-warning fw-bold"><i class="bi bi-pause-circle-fill"></i> On Break / Out</span>
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="fw-bold text-muted">
+                                                <% 
+                                                    let hrs = Math.floor((record.total_worked_seconds || 0) / 3600);
+                                                    let mins = Math.floor(((record.total_worked_seconds || 0) % 3600) / 60);
+                                                %>
+                                                <%= hrs %>h <%= mins %>m
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="4" class="text-center text-muted py-5">No records found for this date.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mark Attendance Modal -->
+        <div class="modal fade" id="markAttendanceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="fw-bold">Override Attendance</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="overrideForm">
+                        <div class="modal-body">
+                            <input type="hidden" id="overrideDate" value="<%= filterDate %>">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Select Artist</label>
+                                <select class="form-select" id="overrideArtist" required>
+                                    <option value="" disabled selected>Choose an artist...</option>
+                                    <% if (artists && artists.length > 0) { %>
+                                        <% artists.forEach(a => { %>
+                                            <option value="<%= a.artist_id %>"><%= a.artist_name %></option>
+                                        <% }) %>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold text-uppercase">Status</label>
+                                <select class="form-select" id="overrideStatus" required>
+                                    <option value="Present">Present</option>
+                                    <option value="Half Day">Half Day</option>
+                                    <option value="Leave">Leave</option>
+                                    <option value="Absent">Absent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-0">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Status</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('overrideForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+
+                const data = {
+                    artist_id: document.getElementById('overrideArtist').value,
+                    date: document.getElementById('overrideDate').value,
+                    status: document.getElementById('overrideStatus').value
+                };
+
+                fetch('/admin/api/attendance/update-status', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        if(window.showActionToast) window.showActionToast('att-upd', 'Success', data.message, 'bi-check-circle', 'success');
+                        loadAdminDay(document.getElementById('adminDateFilter').value);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('markAttendanceModal'));
+                        if(modal) modal.hide();
+                    } else {
+                        if(window.showActionToast) window.showActionToast('att-err', 'Error', data.message, 'bi-exclamation-triangle', 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if(window.showActionToast) window.showActionToast('att-err', 'Error', 'Something went wrong', 'bi-exclamation-triangle', 'danger');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            });
+
+            function loadAdminDay(dateStr) {
+                document.getElementById('adminDateFilter').value = dateStr;
+                document.getElementById('overrideDate').value = dateStr;
+                
+                const dateObj = new Date(dateStr);
+                document.getElementById('adminLogDateTitle').innerText = dateObj.toLocaleDateString(undefined, { timeZone: 'UTC' });
+
+                fetch('/admin/api/attendance/daily?date=' + dateStr)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.overview) {
+                            document.getElementById('adminStatTotal').innerText = data.overview.total_artists || 0;
+                            document.getElementById('adminStatPresent').innerText = data.overview.present_count || 0;
+                            document.getElementById('adminStatAbsent').innerText = data.overview.absent_count || 0;
+                        }
+                        
+                        const tbody = document.getElementById('adminDailyTableBody');
+                        tbody.innerHTML = '';
+                        if (data.records && data.records.length > 0) {
+                            data.records.forEach(r => {
+                                let badgeClass = r.status === 'Present' ? 'bg-success text-white' : (r.status === 'Half Day' ? 'bg-warning text-dark' : 'bg-danger text-white');
+                                
+                                let stateHtml = '<span class="text-muted">-</span>';
+                                if (r.last_check_in) {
+                                    stateHtml = '<span class="text-success fw-bold"><i class="bi bi-circle-fill" style="font-size:0.6rem;"></i> Working</span>';
+                                } else if (r.status === 'Present' || r.status === 'Half Day') {
+                                    stateHtml = '<span class="text-warning fw-bold"><i class="bi bi-pause-circle-fill"></i> On Break / Out</span>';
+                                }
+
+                                let hrs = Math.floor((r.total_worked_seconds || 0) / 3600);
+                                let mins = Math.floor(((r.total_worked_seconds || 0) % 3600) / 60);
+                                
+                                tbody.innerHTML += `
+                                    <tr>
+                                        <td class="ps-4 fw-bold">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; font-weight: bold;">
+                                                    ${r.artist_name.charAt(0).toUpperCase()}
+                                                </div>
+                                                ${r.artist_name}
+                                            </div>
+                                        </td>
+                                        <td><span class="status-badge ${badgeClass}">${r.status}</span></td>
+                                        <td>${stateHtml}</td>
+                                        <td class="fw-bold text-muted">${hrs}h ${mins}m</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-5">No records found for this date.</td></tr>';
+                        }
+                    }
+                });
+            }
+        </script>
+    <% } %>
+
+</div>
+
+<%- include('partials/footer') %>

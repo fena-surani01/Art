@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fenaria Admin</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin/css/style.css">
+    
+    <!-- Dynamic Favicon Generator -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const setFavicon = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#212529';
+                ctx.beginPath();
+                ctx.arc(32, 32, 32, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 38px Caveat, cursive';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('F', 22, 34);
+                
+                ctx.fillStyle = '#28a745';
+                ctx.font = '18px sans-serif';
+                ctx.fillText('☘︎', 44, 28);
+                
+                ctx.fillStyle = '#ffc107';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('˖', 52, 42);
+
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/png';
+                link.href = canvas.toDataURL('image/png');
+                document.head.appendChild(link);
+            };
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(setFavicon);
+            } else {
+                setTimeout(setFavicon, 500);
+            }
+        });
+    </script>
+</head>
+
+<body>
+
+<div class="top-navbar">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-list mobile-menu-toggle" id="sidebarToggleBtn"></i>
+        <div class="logo">
+            Fenaria ☘︎˖
+        </div>
+    </div>
+
+    <div class="nav-icons d-flex align-items-center gap-3">
+        <% if (admin && admin.role === 'artist') { %>
+            <div id="global-status-badge" class="badge rounded-pill bg-secondary d-flex align-items-center me-2" style="font-size: 0.8rem; padding: 6px 12px; min-width: 80px; justify-content: center;">
+                <span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true" style="width: 0.6rem; height: 0.6rem;"></span> Loading
+            </div>
+            
+            <script>
+                function updateGlobalStatus() {
+                    fetch('/admin/api/attendance/live-status')
+                    .then(res => res.json())
+                    .then(data => {
+                        const badge = document.getElementById('global-status-badge');
+                        if (data.success && data.record) {
+                            if (data.record.status === 'Leave' || data.record.status === 'Absent') {
+                                badge.className = 'badge rounded-pill bg-danger d-flex align-items-center me-2';
+                                badge.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> ' + data.record.status;
+                            } else if (data.record.last_check_in) {
+                                badge.className = 'badge rounded-pill bg-success d-flex align-items-center me-2';
+                                badge.innerHTML = '<i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Active';
+                            } else {
+                                badge.className = 'badge rounded-pill bg-warning text-dark d-flex align-items-center me-2';
+                                badge.innerHTML = '<i class="bi bi-pause-circle-fill me-1"></i> Break';
+                            }
+                        } else {
+                            badge.className = 'badge rounded-pill bg-secondary d-flex align-items-center me-2';
+                            badge.innerHTML = '<i class="bi bi-clock me-1"></i> Not Started';
+                        }
+                    })
+                    .catch(() => {});
+                }
+                
+                document.addEventListener('DOMContentLoaded', () => {
+                    updateGlobalStatus();
+                    setInterval(updateGlobalStatus, 30000); // Check every 30s
+                });
+            </script>
+        <% } %>
+
+        <a href="/admin/profile" class="d-flex align-items-center text-white text-decoration-none" style="gap: 8px; cursor: pointer;" title="View Profile">
+            <div class="fw-bold fs-6"><%= admin ? admin.name : 'User' %></div>
+            <i class="bi bi-person-circle fs-5"></i>
+        </a>
+        <a href="/admin/logout" class="text-white" title="Logout">
+            <i class="bi bi-box-arrow-right fs-5"></i>
+        </a>
+    </div>
+
+</div>

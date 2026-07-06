@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&amp;display=swap');
+    .bg { fill: #212529; }
+    .f-text {
+      fill: #ffffff;
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: 44px;
+    }
+    .clover { fill: #28a745; font-family: sans-serif; font-size: 20px; }
+    .sparkle { fill: #ffc107; font-family: sans-serif; font-size: 20px; }
+  </style>
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="32" class="bg" />
+  
+  <!-- Text Elements -->
+  <text x="24" y="44" text-anchor="middle" class="f-text">F</text>
+  <text x="42" y="35" class="clover">☘︎</text>
+  <text x="50" y="44" class="sparkle">˖</text>
+</svg>

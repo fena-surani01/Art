@@ -1,0 +1,413 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<!-- Add Chart.js for Admin Cool Graphs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* Strict Official Corporate Theme */
+    :root {
+        --primary-blue: #294A70;
+        --secondary-blue: #3A6394;
+        --light-bg: #F4F7FA;
+        --card-border: #E2E8F0;
+        --text-main: #334155;
+        --text-muted: #64748B;
+    }
+
+    body {
+        background-color: var(--light-bg);
+    }
+    
+    .official-card {
+        background: #FFFFFF;
+        border: 1px solid rgba(41, 74, 112, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        border-radius: 16px;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .official-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(41, 74, 112, 0.12);
+    }
+
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        background-color: rgba(41, 74, 112, 0.05);
+        color: var(--primary-blue);
+    }
+
+    .section-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-blue);
+        display: inline-block;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Top KPI border accents */
+    .kpi-card {
+        border-top: 4px solid var(--primary-blue);
+    }
+</style>
+
+<div class="main-content">
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-0" style="color: var(--primary-blue);">
+                Analytics Dashboard
+            </h2>
+            <p class="text-muted mt-1 mb-0 fs-6">
+                <% if (admin && admin.role === 'artist') { %>
+                    Artist Portal - <%= admin.name %>
+                <% } else { %>
+                    Administrative Overview
+                <% } %>
+            </p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <select id="dateFilter" class="form-select border" style="width: 200px; color: var(--text-main);">
+                <option value="today" selected>Today</option>
+                <option value="week">Last 7 Days</option>
+                <option value="month">This Month</option>
+                <option value="all">All Time</option>
+            </select>
+            <button id="refreshDashboardBtn" class="btn" style="background-color: var(--primary-blue); color: white; border-radius: 6px;">
+                <i class="bi bi-arrow-clockwise me-1" id="refreshIcon"></i> Sync
+            </button>
+        </div>
+    </div>
+
+    <% if (admin && admin.role === 'artist') { %>
+        <!-- ARTIST DASHBOARD -->
+        <h5 class="section-header">Workspace Metrics</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card official-card h-100 p-0">
+                    <div class="d-flex h-100">
+                        <div class="d-flex align-items-center justify-content-center p-3" style="width: 25%; background-color: rgba(41, 74, 112, 0.08);">
+                            <i class="bi bi-brush" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                        </div>
+                        <div class="p-3 d-flex flex-column justify-content-center bg-white" style="width: 75%;">
+                            <p class="stat-label mb-1">Total</p>
+                            <p class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 1.05rem; line-height: 1.1;">Assigned</p>
+                            <h2 class="stat-value mt-auto" id="artist-total">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card official-card h-100 p-0">
+                    <div class="d-flex h-100">
+                        <div class="d-flex align-items-center justify-content-center p-3" style="width: 25%; background-color: rgba(41, 74, 112, 0.08);">
+                            <i class="bi bi-hourglass-split" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                        </div>
+                        <div class="p-3 d-flex flex-column justify-content-center bg-white" style="width: 75%;">
+                            <p class="stat-label mb-1">Pending</p>
+                            <p class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 1.05rem; line-height: 1.1;">Action</p>
+                            <h2 class="stat-value mt-auto" id="artist-pending">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card official-card h-100 p-0">
+                    <div class="d-flex h-100">
+                        <div class="d-flex align-items-center justify-content-center p-3" style="width: 25%; background-color: rgba(41, 74, 112, 0.08);">
+                            <i class="bi bi-palette" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                        </div>
+                        <div class="p-3 d-flex flex-column justify-content-center bg-white" style="width: 75%;">
+                            <p class="stat-label mb-1">Currently</p>
+                            <p class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 1.05rem; line-height: 1.1;">Working On</p>
+                            <h2 class="stat-value mt-auto" id="artist-working">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card official-card h-100 p-0">
+                    <div class="d-flex h-100">
+                        <div class="d-flex align-items-center justify-content-center p-3" style="width: 25%; background-color: rgba(41, 74, 112, 0.08);">
+                            <i class="bi bi-check-all" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                        </div>
+                        <div class="p-3 d-flex flex-column justify-content-center bg-white" style="width: 75%;">
+                            <p class="stat-label mb-1">Requests</p>
+                            <p class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 1.05rem; line-height: 1.1;">Completed</p>
+                            <h2 class="stat-value mt-auto" id="artist-completed">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="section-header mt-3">Platform Feedback</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card official-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="stat-label mb-1">Total Artwork Reviews</p>
+                            <h2 class="stat-value mb-0" id="artist-reviews">0</h2>
+                        </div>
+                        <div class="icon-box"><i class="bi bi-star-fill"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <% } else { %>
+        <!-- ADMIN DASHBOARD -->
+
+        <!-- Live Activity -->
+        <h5 class="section-header">Live Activity</h5>
+        <div class="row g-4 mb-4">
+            
+            <!-- Artist Activity -->
+            <div class="col-md-4">
+                <div class="card official-card h-100 p-3" style="border-top: 4px solid #3A6394;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box me-3" style="width: 36px; height: 36px;"><i class="bi bi-person-badge fs-5"></i></div>
+                        <h6 class="fw-bold mb-0 text-dark">Artist Activity</h6>
+                    </div>
+                    <div class="row g-2 text-center small">
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-light border">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Total</div>
+                                <div class="fw-bold fs-6 text-dark" id="live-art-total">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border" style="background-color: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2) !important;">
+                                <div class="text-success" style="font-size: 0.7rem; text-transform: uppercase;">Logged In</div>
+                                <div class="fw-bold fs-6 text-success" id="live-art-online">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border" style="background-color: rgba(13, 110, 253, 0.05); border-color: rgba(13, 110, 253, 0.2) !important;">
+                                <div class="text-primary" style="font-size: 0.7rem; text-transform: uppercase;">Present</div>
+                                <div class="fw-bold fs-6 text-primary" id="live-art-present">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border" style="background-color: rgba(255, 193, 7, 0.05); border-color: rgba(255, 193, 7, 0.2) !important;">
+                                <div class="text-warning text-dark" style="font-size: 0.7rem; text-transform: uppercase;">On Break</div>
+                                <div class="fw-bold fs-6 text-warning text-dark" id="live-art-break">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border" style="background-color: rgba(220, 53, 69, 0.05); border-color: rgba(220, 53, 69, 0.2) !important;">
+                                <div class="text-danger" style="font-size: 0.7rem; text-transform: uppercase;">Full Leave</div>
+                                <div class="fw-bold fs-6 text-danger" id="live-art-leave">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border" style="background-color: rgba(253, 126, 20, 0.05); border-color: rgba(253, 126, 20, 0.2) !important;">
+                                <div style="color: #fd7e14; font-size: 0.7rem; text-transform: uppercase;">Half Leave</div>
+                                <div class="fw-bold fs-6" style="color: #fd7e14;" id="live-art-half">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Activity (Dummy) -->
+            <div class="col-md-4">
+                <div class="card official-card h-100 p-3" style="border-top: 4px solid #6c757d;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box me-3" style="width: 36px; height: 36px; background-color: rgba(108, 117, 125, 0.1); color: #6c757d;"><i class="bi bi-briefcase fs-5"></i></div>
+                        <h6 class="fw-bold mb-0 text-dark">Employee Activity <span class="badge bg-secondary ms-1" style="font-size: 0.6rem;">Coming Soon</span></h6>
+                    </div>
+                    <div class="row g-2 text-center small opacity-50">
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-light border">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Total</div>
+                                <div class="fw-bold fs-6 text-dark">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border bg-light">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Logged In</div>
+                                <div class="fw-bold fs-6 text-muted">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border bg-light">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Present</div>
+                                <div class="fw-bold fs-6 text-muted">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border bg-light">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">On Break</div>
+                                <div class="fw-bold fs-6 text-muted">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border bg-light">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Full Leave</div>
+                                <div class="fw-bold fs-6 text-muted">0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded border bg-light">
+                                <div class="text-muted" style="font-size: 0.7rem; text-transform: uppercase;">Half Leave</div>
+                                <div class="fw-bold fs-6 text-muted">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Activity -->
+            <div class="col-md-4">
+                <div class="card official-card h-100 p-3" style="border-top: 4px solid #10b981;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box me-3" style="width: 36px; height: 36px; background-color: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="bi bi-people fs-5"></i></div>
+                        <h6 class="fw-bold mb-0 text-dark">User Activity</h6>
+                    </div>
+                    <div class="row g-2 text-center small">
+                        <div class="col-12">
+                            <div class="p-3 rounded bg-light border d-flex flex-column justify-content-center">
+                                <div class="text-muted mb-1" style="font-size: 0.7rem; text-transform: uppercase;">Total Registered</div>
+                                <div class="fw-bold fs-5 text-dark" id="live-user-total">0</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 rounded border d-flex flex-column justify-content-center" style="background-color: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2) !important;">
+                                <div class="text-success mb-1" style="font-size: 0.7rem; text-transform: uppercase;">Logged In</div>
+                                <div class="fw-bold fs-5 text-success" id="live-user-online">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Level KPIs -->
+        <h5 class="section-header">Key Performance Indicators</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card official-card h-100 p-0">
+                    <div class="d-flex h-100">
+                        <div class="d-flex align-items-center justify-content-center p-3" style="width: 25%; background-color: rgba(41, 74, 112, 0.08);">
+                            <i class="bi bi-images" style="font-size: 1.8rem; color: var(--primary-blue);"></i>
+                        </div>
+                        <div class="p-3 d-flex flex-column justify-content-center bg-white" style="width: 75%;">
+                            <p class="stat-label mb-1">Total</p>
+                            <p class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 1.05rem; line-height: 1.1;">Artworks</p>
+                            <h2 class="stat-value mt-auto" id="stat-arts">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Left Column: Operations -->
+            <div class="col-lg-6">
+                <h5 class="section-header mt-2">Fulfillment Operations</h5>
+                <div class="card official-card p-4 h-100">
+                    
+                    <h6 class="fw-bold mb-3" style="color: var(--text-main); font-size: 0.95rem;">Standard Store Orders</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: var(--light-bg); border: 1px solid var(--card-border);">
+                                <p class="stat-label mb-1">Total</p>
+                                <h4 class="mb-0 fw-bold" style="color: var(--primary-blue);" id="stat-total-orders">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: var(--light-bg); border: 1px solid var(--card-border);">
+                                <p class="stat-label mb-1">Pending</p>
+                                <h4 class="mb-0 fw-bold" style="color: var(--primary-blue);" id="stat-pending">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                                <span class="text-muted fw-bold" style="font-size: 0.85rem;">Delivered Successfully</span>
+                                <span class="fw-bold" style="color: var(--primary-blue);" id="stat-delivered">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3" style="color: var(--text-main); font-size: 0.95rem;">Custom Artwork Requests</h6>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: var(--light-bg); border: 1px solid var(--card-border);">
+                                <p class="stat-label mb-1">Total</p>
+                                <h4 class="mb-0 fw-bold" style="color: var(--primary-blue);" id="stat-custom">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded" style="background-color: var(--light-bg); border: 1px solid var(--card-border);">
+                                <p class="stat-label mb-1">Pending</p>
+                                <h4 class="mb-0 fw-bold" style="color: var(--primary-blue);" id="stat-custom-pending">0</h4>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="d-flex justify-content-between align-items-center pb-2 border-bottom">
+                                <span class="text-muted fw-bold" style="font-size: 0.85rem;">Completed Requests</span>
+                                <span class="fw-bold" style="color: var(--primary-blue);" id="stat-custom-completed">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Right Column: Analytics Chart & Others -->
+            <div class="col-lg-6">
+                <h5 class="section-header mt-2">Activity Overview</h5>
+                <div class="card official-card p-4 mb-4">
+                    <canvas id="adminChart" height="150"></canvas>
+                </div>
+
+                <div class="card official-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box m-0"><i class="bi bi-star"></i></div>
+                            <span class="fw-bold text-muted text-uppercase" style="font-size: 0.85rem;">Total Store Reviews</span>
+                        </div>
+                        <h3 class="mb-0 fw-bold" style="color: var(--primary-blue);" id="stat-reviews">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <% } %>
+
+</div>
+
+<script>
+    window.USER_ROLE = '<%= admin.role %>';
+</script>
+<script src="/admin/js/dashboard.js"></script>
+
+<%- include('partials/footer') %>

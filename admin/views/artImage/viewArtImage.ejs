@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+
+    <div class="module-title">
+        <h1 class="module-heading">View Art Images</h1>
+    </div>
+
+    <div class="table-card">
+
+        <a href="/admin/art-image/add" class="submit-btn mb-3">
+            <i class="bi bi-plus-circle"></i> Add Images
+        </a>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Art Title</th>
+                    <th>Image</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="artImageTableBody"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script src="/admin/js/artImage.js"></script>
+
+<%- include('../partials/footer') %>

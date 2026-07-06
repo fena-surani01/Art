@@ -1,0 +1,50 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<div class="main-content">
+
+    <div class="module-title">
+        <h1 class="module-heading">Add Art Images</h1>
+    </div>
+
+    <div class="form-card">
+
+        <div id="imageMessage"></div>
+
+        <form id="addArtImageForm" enctype="multipart/form-data">
+
+            <div class="mb-3">
+                <label class="form-label">Select Art</label>
+
+                <select id="art_id" name="art_id" class="form-control">
+                    <option value="">Select Art</option>
+
+                    <% arts.forEach(art => { %>
+                        <option value="<%= art.art_id %>">
+                            <%= art.title %>
+                        </option>
+                    <% }) %>
+
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Select Images</label>
+                <input type="file" id="images" name="images" class="form-control" multiple accept="image/*">
+            </div>
+
+            <div id="imagePreview" class="image-preview-box"></div>
+
+            <button type="submit" class="submit-btn mt-3">
+                Add Images
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script src="/admin/js/artImage.js"></script>
+
+<%- include('../partials/footer') %>
