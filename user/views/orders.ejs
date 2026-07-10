@@ -226,12 +226,16 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="text-center mb-4">
+                                    <div class="text-center mb-4 mt-2">
                                         <% if (order.status === 'Delivered') { %>
-                                            <div class="badge bg-success bg-opacity-10 text-success border border-success p-3 fs-6 rounded-pill shadow-sm mt-3">
-                                                <i class="bi bi-check-circle-fill me-2"></i>
-                                                Woohoo! Your order has been delivered! 🎉
+                                            <!-- Do not show estimated delivery if already delivered -->
+                                        <% } else if (order.status === 'Return Requested') { %>
+                                            <% if (order.estimated_pickup) { %>
+                                            <div class="badge bg-warning bg-opacity-10 text-dark border border-warning p-2 fs-6 rounded-pill shadow-sm">
+                                                <i class="bi bi-truck text-warning me-2"></i>
+                                                Estimated Pickup: <span class="fw-bold"><%= new Date(order.estimated_pickup).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) %></span>
                                             </div>
+                                            <% } %>
                                         <% } else { %>
                                             <div class="badge bg-light text-dark border p-2">
                                                 <i class="bi bi-calendar-event text-primary me-2"></i>
@@ -283,11 +287,17 @@
                                             <p class="mb-1 fw-bold"><i class="bi bi-telephone-fill text-primary me-2"></i>Contact</p>
                                             <p class="text-muted small ms-4 mb-4"><%= order.phone_number %></p>
                                             
-                                            <% if (order.status === 'Pending' || order.status === 'Processing') { %>
-                                                <button class="btn btn-outline-danger w-100 mt-2" onclick="cancelOrder(<%= order.order_id %>)">
-                                                    <i class="bi bi-x-circle me-2"></i> Cancel Order
-                                                </button>
+                                            <% const canCancel = (order.status === 'Pending' || order.status === 'Processing'); %>
+                                            <% if (canCancel) { %>
+                                            <button class="btn btn-outline-danger w-100 mt-2 fw-semibold" onclick="cancelOrder(<%= order.order_id %>)">
+                                                <i class="bi bi-x-circle me-2"></i> Cancel Order
+                                            </button>
                                             <% } %>
+
+                                            <% const canReturn = (order.status === 'Delivered'); %>
+                                            <button class="btn btn-outline-primary w-100 mt-2 fw-semibold" onclick="showReturnModal(<%= order.order_id %>)" <%= canReturn ? '' : 'disabled' %>>
+                                                <i class="bi bi-arrow-return-left me-2"></i> Return Order
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -390,7 +400,45 @@
         </div>
     </section>
 
-    <%- include('partials/footer') %>
+    </div>
+
+<!-- Return Order Modal -->
+<div class="modal fade" id="returnOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-bottom-0 bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold">Return Order <span id="returnOrderIdDisplay" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="returnOrderForm" onsubmit="submitReturn(event)">
+                    <input type="hidden" id="returnOrderId" name="order_id">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Reason for Return</label>
+                        <select class="form-select form-select-lg" id="returnReason" name="reason" onchange="toggleOtherReason()" required>
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="Different Art">Different Art</option>
+                            <option value="Defective product">Defective product</option>
+                            <option value="Not Like">Not Like</option>
+                            <option value="Other">Other Reason</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 d-none" id="otherReasonContainer">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Please specify</label>
+                        <textarea class="form-control" id="otherReason" name="other_reason" rows="3" placeholder="Describe the issue..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold" id="submitReturnBtn">Submit Return Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<%- include('partials/footer') %>
     <script>
         function cancelOrder(orderId) {
             if (confirm("Are you sure you want to cancel this order? This action cannot be undone.")) {
@@ -504,6 +552,88 @@
                 switchTab('order', orderTab);
             }
         });
-    </script>
+
+    // --- Return Order Flow ---
+    let returnModal;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        returnModal = new bootstrap.Modal(document.getElementById('returnOrderModal'));
+    });
+
+    function showReturnModal(orderId) {
+        document.getElementById('returnOrderId').value = orderId;
+        document.getElementById('returnOrderIdDisplay').innerText = `#ORD-${orderId}`;
+        
+        // Reset form
+        document.getElementById('returnOrderForm').reset();
+        document.getElementById('otherReasonContainer').classList.add('d-none');
+        document.getElementById('otherReason').required = false;
+        
+        returnModal.show();
+    }
+
+    function toggleOtherReason() {
+        const reason = document.getElementById('returnReason').value;
+        const container = document.getElementById('otherReasonContainer');
+        const input = document.getElementById('otherReason');
+        
+        if (reason === 'Other') {
+            container.classList.remove('d-none');
+            input.required = true;
+        } else {
+            container.classList.add('d-none');
+            input.required = false;
+        }
+    }
+
+    async function submitReturn(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitReturnBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        btn.disabled = true;
+
+        const orderId = document.getElementById('returnOrderId').value;
+        const reason = document.getElementById('returnReason').value;
+        const otherReason = document.getElementById('otherReason').value;
+
+        try {
+            const response = await fetch('/api/orders/return', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: orderId, reason, other_reason: otherReason })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                returnModal.hide();
+                Swal.fire({
+                    title: 'Return Requested!',
+                    html: `Your return has been requested successfully.<br><br><strong>Estimated Pickup:</strong> ${data.estimated_pickup}`,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#212529'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Failed to request return');
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: error.message,
+                icon: 'error',
+                confirmButtonColor: '#212529'
+            });
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+</script>
 </body>
 </html>

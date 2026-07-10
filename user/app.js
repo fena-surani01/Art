@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
 const path = require('path');
 const session = require('express-session');
 require('dotenv').config();
@@ -42,7 +46,27 @@ app.use('/', cartRoutes);
 app.use('/', artistRoutes);
 app.use('/', checkoutRoutes);
 
-app.listen(6070, () => {
+// Socket.io unified chat integration
+const automationEngine = require('./controller/automationEngine');
+io.on('connection', (socket) => {
+    socket.on('chatMessage', async (data) => {
+        try {
+            const msg = typeof data === 'object' ? data.text : data;
+            const userId = typeof data === 'object' ? data.userId : null;
+            const reply = await automationEngine.processMessage(msg, userId);
+            socket.emit('botReply', reply);
+        } catch (error) {
+            console.error('Socket engine error:', error);
+            socket.emit('botReply', 'Sorry, I ran into an issue.');
+        }
+    });
+});
+
+// Telegram Bot Integration
+const telegramBot = require('./services/telegramBot');
+telegramBot.initTelegramBot();
+
+server.listen(6070, () => {
     console.log("Server is Running on PORT : 6070");
     
     // Clear any stuck online sessions from previous run

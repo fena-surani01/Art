@@ -140,6 +140,12 @@ router.get('/orders/view', auth, orderController.viewOrdersPage);
 router.get('/api/orders/:id/items', auth, orderController.getOrderDetailsAPI);
 router.put('/api/orders/update/:id', auth, orderController.updateOrderStatusAPI);
 
+// Returns Menu
+const returnController = require('../controllers/returnController');
+router.get('/returns/view', auth, returnController.viewReturnsPage);
+router.put('/api/returns/update-status/:id', auth, returnController.updateReturnStatusAPI);
+router.get('/api/returns/check-new', auth, returnController.checkNewReturnsAPI);
+
 // Reviews Menu
 const reviewController = require('../controllers/reviewController');
 router.get('/reviews/view', auth, reviewController.viewReviewsPage);

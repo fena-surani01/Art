@@ -38,8 +38,48 @@
 
 </footer>
 
+<!-- Customer Support Widget -->
+<div class="support-widget-container">
+    <div class="support-panel shadow-lg" id="supportPanel">
+        <div class="support-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <h5 class="mb-0 fw-bold" style="font-family: 'Caveat', cursive; font-size: 1.8rem;">Ask Fenaria </h5>
+            </div>
+            <div class="d-flex gap-3 align-items-center">
+                <button type="button" class="btn btn-link text-white-50 p-0 m-0" title="Clear Chat"
+                    onclick="clearChat()">
+                    <i class="bi bi-trash fs-5 hover-white"></i>
+                </button>
+                <button type="button" class="btn-close btn-close-white fs-5" aria-label="Close"
+                    onclick="toggleSupportPanel()"></button>
+            </div>
+        </div>
+        <div class="support-body p-4 bg-light d-flex flex-column gap-3" id="supportBody" style="overflow-y: auto;">
+            <!-- Chat starts empty -->
+        </div>
+        <div class="support-footer p-3 bg-white border-top">
+            <form id="chatForm" onsubmit="sendChatMessage(event)" class="d-flex gap-2 m-0">
+                <input type="text" id="chatInput" class="form-control rounded-pill px-4 bg-light border-0 shadow-none"
+                    placeholder="Type a message..." autocomplete="off" required oninput="toggleSendButton()">
+                <button type="submit" id="sendBtn"
+                    class="btn btn-dark rounded-circle d-flex justify-content-center align-items-center shadow-sm"
+                    style="width: 45px; height: 45px; flex-shrink: 0;" disabled>
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Button -->
+    <button class="support-btn shadow-lg d-flex justify-content-center align-items-center"
+        onclick="toggleSupportPanel()">
+        <i class="bi bi-headset"></i>
+    </button>
+</div>
+
 <!-- Premium Review Modal -->
-<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true"
+    data-bs-backdrop="false" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="modal-header bg-dark text-white border-0 py-3">
@@ -47,33 +87,43 @@
                     <i class="bi bi-star-fill text-warning me-2"></i> How was your art?
                 </h5>
                 <!-- No close button so they are encouraged to review, or maybe add a "Review Later" button -->
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="delayReview()"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
+                    onclick="delayReview()"></button>
             </div>
             <div class="modal-body p-4 text-center">
-                <img id="reviewArtImage" src="" alt="Art" class="rounded-3 shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                <img id="reviewArtImage" src="" alt="Art" class="rounded-3 shadow-sm mb-3"
+                    style="width: 120px; height: 120px; object-fit: cover;">
                 <h5 id="reviewArtTitle" class="fw-bold mb-1">Art Title</h5>
                 <p class="text-muted small mb-4">Delivered from Fenaria</p>
-                
+
                 <h6 class="mb-3">Rate your experience</h6>
                 <div class="star-rating mb-4 d-flex justify-content-center flex-row-reverse">
-                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
-                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"><i
+                            class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"><i
+                            class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"><i
+                            class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"><i
+                            class="bi bi-star-fill"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"><i
+                            class="bi bi-star-fill"></i></label>
                 </div>
 
                 <div class="form-group text-start">
                     <label class="fw-semibold small text-muted mb-2">Leave a comment (Optional)</label>
-                    <textarea id="reviewComment" class="form-control rounded-3 bg-light border-0 p-3" rows="3" placeholder="Tell us what you loved about this piece..."></textarea>
+                    <textarea id="reviewComment" class="form-control rounded-3 bg-light border-0 p-3" rows="3"
+                        placeholder="Tell us what you loved about this piece..."></textarea>
                 </div>
-                
+
                 <input type="hidden" id="reviewOrderId">
                 <input type="hidden" id="reviewArtId">
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" onclick="delayReview()">Review Later</button>
-                <button type="button" class="btn btn-dark rounded-pill px-4 flex-grow-1 shadow" onclick="submitReview()">Submit Review</button>
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal"
+                    onclick="delayReview()">Review Later</button>
+                <button type="button" class="btn btn-dark rounded-pill px-4 flex-grow-1 shadow"
+                    onclick="submitReview()">Submit Review</button>
             </div>
         </div>
     </div>
@@ -85,28 +135,118 @@
         font-size: 2rem;
         gap: 0.5rem;
     }
+
     .star-rating input {
         display: none;
     }
+
     .star-rating label {
         color: #e4e5e9;
         cursor: pointer;
         transition: color 0.2s ease-in-out, transform 0.1s;
     }
+
     .star-rating label:hover,
-    .star-rating label:hover ~ label,
-    .star-rating input:checked ~ label {
+    .star-rating label:hover~label,
+    .star-rating input:checked~label {
         color: #ffc107;
     }
+
     .star-rating label:active {
         transform: scale(0.8);
     }
+
     .modal {
         z-index: 1055 !important;
+    }
+
+    /* Support Widget CSS */
+    .support-widget-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1060;
+    }
+
+    .support-btn {
+        width: 75px;
+        height: 75px;
+        border-radius: 50%;
+        border: 2px solid white;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        float: right;
+        margin-top: 15px;
+        background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+        color: white;
+        font-size: 2.2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .support-btn:hover {
+        transform: scale(1.1) translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        background: linear-gradient(135deg, #111 0%, #222 100%);
+    }
+
+    .support-panel {
+        position: absolute;
+        bottom: 90px;
+        right: 0;
+        width: 450px;
+        height: 700px;
+        background: #f8f9fa;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: scale(0);
+        transform-origin: bottom right;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        opacity: 0;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .support-panel.show {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .support-header {
+        border-bottom: 3px solid #ffc107;
+    }
+
+    .support-body {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    /* Scrollbar for support panel */
+    .support-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .support-body::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .support-body::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .hover-white {
+        transition: color 0.2s;
+    }
+
+    .hover-white:hover {
+        color: white !important;
     }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
     let currentPendingReviews = [];
@@ -116,7 +256,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize Modal
         reviewModalInstance = new bootstrap.Modal(document.getElementById('reviewModal'));
-        
+
         // Start polling for reviews every 15 seconds
         setInterval(checkPendingReviews, 15000);
         // Check immediately on load
@@ -126,7 +266,7 @@
     function checkPendingReviews() {
         // If they clicked "Review Later", wait 5 minutes before bothering them again
         if (Date.now() < reviewDelayedUntil) return;
-        
+
         // If a modal is already open, don't interfere
         if (document.getElementById('reviewModal').classList.contains('show')) return;
 
@@ -146,24 +286,24 @@
         document.getElementById('reviewArtId').value = item.art_id;
         document.getElementById('reviewArtTitle').innerText = item.title;
         document.getElementById('reviewArtImage').src = item.image_path || '/images/default-art.jpg';
-        
+
         // Reset form
         document.getElementById('reviewComment').value = '';
         document.querySelectorAll('.star-rating input').forEach(input => input.checked = false);
-        
+
         reviewModalInstance.show();
     }
 
     function delayReview() {
         // Snooze for 2 minutes
-        reviewDelayedUntil = Date.now() + (2 * 60 * 1000); 
+        reviewDelayedUntil = Date.now() + (2 * 60 * 1000);
     }
 
     function submitReview() {
         const orderId = document.getElementById('reviewOrderId').value;
         const artId = document.getElementById('reviewArtId').value;
         const comment = document.getElementById('reviewComment').value;
-        
+
         // Find checked rating
         const ratingInput = document.querySelector('.star-rating input:checked');
         if (!ratingInput) {
@@ -183,33 +323,218 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ order_id: orderId, art_id: artId, rating, comment })
         })
-        .then(res => res.json())
-        .then(data => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            
-            if (data.success) {
-                reviewModalInstance.hide();
-                // Check if there are more reviews to do
-                currentPendingReviews.shift();
-                if (currentPendingReviews.length > 0) {
-                    setTimeout(() => showReviewModal(currentPendingReviews[0]), 500);
-                } else {
-                    alert('Thank you for your review!');
-                    // Also refresh the page if we're on the orders page so the review button updates
-                    if (window.location.pathname.includes('/orders')) {
-                        window.location.reload();
+            .then(res => res.json())
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                if (data.success) {
+                    reviewModalInstance.hide();
+                    // Check if there are more reviews to do
+                    currentPendingReviews.shift();
+                    if (currentPendingReviews.length > 0) {
+                        setTimeout(() => showReviewModal(currentPendingReviews[0]), 500);
+                    } else {
+                        alert('Thank you for your review!');
+                        // Also refresh the page if we're on the orders page so the review button updates
+                        if (window.location.pathname.includes('/orders')) {
+                            window.location.reload();
+                        }
                     }
+                } else {
+                    alert(data.message || 'Error submitting review');
                 }
-            } else {
-                alert(data.message || 'Error submitting review');
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert('Something went wrong.');
+            });
+    }
+
+    // Support Widget Logic
+    function toggleSupportPanel() {
+        const panel = document.getElementById('supportPanel');
+        panel.classList.toggle('show');
+    }
+
+    // Initialize Socket.io
+    const socket = io();
+
+    // Chat History Persistence
+    let chatHistory = JSON.parse(localStorage.getItem('fenaria_chat_history')) || [];
+
+    function saveChatHistory() {
+        localStorage.setItem('fenaria_chat_history', JSON.stringify(chatHistory));
+    }
+
+    function loadChatHistory() {
+        if (chatHistory.length > 0) {
+            try {
+                // Keep the default HTML greeting at the top!
+                chatHistory.forEach(msg => {
+                    if (msg && msg.text) {
+                        appendMessage(msg.text, msg.sender, msg.options, true);
+                    }
+                });
+                
+                // Disable all buttons in history EXCEPT the ones in the very last message
+                const allMessages = document.querySelectorAll('#supportBody .support-message');
+                if (allMessages.length > 0) {
+                    const lastMessage = allMessages[allMessages.length - 1];
+                    document.querySelectorAll('#supportBody button').forEach(btn => {
+                        if (!lastMessage.contains(btn)) {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-50');
+                            btn.style.cursor = 'not-allowed';
+                            btn.onclick = null;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to load chat history:", error);
+                localStorage.removeItem('fenaria_chat_history'); // Clear corrupt history
+                chatHistory = [];
             }
-        })
-        .catch(err => {
-            console.error(err);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            alert('Something went wrong.');
+        }
+    }
+
+    function clearChat() {
+        if (confirm('Are you sure you want to completely clear the chat history?')) {
+            localStorage.removeItem('fenaria_chat_history');
+            window.location.reload();
+        }
+    }
+
+    socket.on('botReply', (reply) => {
+        if (typeof reply === 'string') {
+            appendMessage(reply, 'bot');
+        } else if (typeof reply === 'object' && reply !== null) {
+            // If forceInput is present, hide default options so we can render them inline
+            const renderOptions = reply.forceInput ? [] : reply.options;
+            appendMessage(reply.text, 'bot', renderOptions);
+            
+            // Render inline input if forceInput is present
+            if (reply.forceInput) {
+                const uniqueId = 'inlineInput_' + Math.random().toString(36).substr(2, 9);
+                
+                let buttonsHtml = `<button class="btn btn-primary btn-sm w-100" onclick="sendChatAction('${reply.forceInput}' + document.getElementById('${uniqueId}').value)">Submit</button>`;
+                
+                if (reply.options && reply.options.length > 0) {
+                    reply.options.forEach(opt => {
+                        const label = typeof opt === 'object' ? opt.label : opt;
+                        const action = typeof opt === 'object' ? opt.action : opt;
+                        buttonsHtml += `<button class="btn btn-secondary btn-sm w-100" onclick="sendChatAction('${action}', '${label}')">${label}</button>`;
+                    });
+                }
+
+                const inlineInputHtml = `
+                <div class="mt-2 p-2 bg-light rounded border">
+                    <input type="text" id="${uniqueId}" class="form-control form-control-sm mb-2" placeholder="Type your reason here...">
+                    <div class="d-flex gap-2">
+                        ${buttonsHtml}
+                    </div>
+                </div>`;
+                
+                const messageDivs = document.querySelectorAll('#supportBody .support-message');
+                if (messageDivs.length > 0) {
+                    messageDivs[messageDivs.length - 1].innerHTML += inlineInputHtml;
+                    setTimeout(() => document.getElementById(uniqueId).focus(), 100);
+                }
+            }
+        }
+    });
+
+    function disableOldButtons() {
+        document.querySelectorAll('#supportBody button').forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            btn.style.cursor = 'not-allowed';
+            btn.onclick = null;
         });
     }
+
+    function sendChatAction(actionText, displayLabel = null) {
+        disableOldButtons();
+        appendMessage(displayLabel || actionText, 'user');
+        const userId = <%= typeof user !== 'undefined' && user ? user.id : 'null' %>;
+        socket.emit('chatMessage', { text: actionText, userId: userId });
+    }
+
+    function toggleSendButton() {
+        const input = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        if (input.value.trim().length > 0) {
+            sendBtn.disabled = false;
+        } else {
+            sendBtn.disabled = true;
+        }
+    }
+
+    function sendChatMessage(event) {
+        event.preventDefault();
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        disableOldButtons();
+        appendMessage(text, 'user');
+        const userId = <%= typeof user !== 'undefined' && user ? user.id : 'null' %>;
+        socket.emit('chatMessage', { text: text, userId: userId });
+        input.value = '';
+        toggleSendButton();
+    }
+
+    function appendMessage(text, sender, options = [], isHistory = false) {
+        if (!isHistory) {
+            chatHistory.push({ text, sender, options });
+            saveChatHistory();
+        }
+
+        const body = document.getElementById('supportBody');
+        const div = document.createElement('div');
+        div.className = `support-message p-3 rounded-4 shadow-sm align-self-${sender === 'user' ? 'end bg-dark text-white' : 'start bg-white text-dark'}`;
+        div.style.maxWidth = '85%';
+        if (sender === 'user') {
+            div.style.borderBottomRightRadius = '0';
+        } else {
+            div.style.borderBottomLeftRadius = '0';
+        }
+
+        const safeText = typeof text === 'string' ? text : String(text || '');
+        let formattedText = safeText.replace(/\n/g, '<br>');
+        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        let html = `<p class="mb-0 fs-6 fw-medium">${formattedText}</p>`;
+
+        if (options && options.length > 0) {
+            html += `<div class="d-flex flex-column gap-2 mt-3">`;
+            options.forEach(opt => {
+                const label = typeof opt === 'object' ? opt.label : opt;
+                const action = typeof opt === 'object' ? opt.action : opt;
+
+                if (action.startsWith('ORD-') || action.startsWith('REQ-') || action.startsWith('Cancel ORD-') || action.startsWith('Confirm Cancel')) {
+                    let icon = 'bi-box-seam';
+                    if (action.startsWith('REQ-')) icon = 'bi-brush';
+                    if (action.startsWith('Cancel') || action.startsWith('Confirm Cancel')) icon = 'bi-x-circle';
+                    if (label.toLowerCase() === 'no') icon = 'bi-arrow-left-circle';
+                    
+                    const btnClass = (action.startsWith('Cancel') || action.startsWith('Confirm Cancel') || label.toLowerCase() === 'yes') ? 'btn-outline-danger' : 'btn-outline-primary';
+                    html += `<button class="btn ${btnClass} btn-sm rounded-pill fw-semibold text-start px-3" onclick="sendChatAction('${action}', '${label}')"><i class="bi ${icon} me-2"></i>${label}</button>`;
+                } else {
+                    html += `<button class="btn btn-outline-dark btn-sm rounded-pill fw-semibold text-start px-3" onclick="sendChatAction('${action}', '${label}')">${label}</button>`;
+                }
+            });
+            html += `</div>`;
+        }
+
+        div.innerHTML = html;
+
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    // Load history on page load
+    loadChatHistory();
 </script>

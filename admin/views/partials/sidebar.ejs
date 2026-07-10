@@ -85,6 +85,21 @@
         <div class="collapse submenu" id="orderMenu" data-bs-parent="#adminSidebar">
             <a href="/admin/orders/view"><i class="bi bi-circle"></i> View Orders</a>
         </div>
+
+        <!-- Return Orders Menu -->
+        <a class="sidebar-link sidebar-parent collapsed"
+        data-bs-toggle="collapse"
+        href="#returnMenu"
+        role="button">
+            <span>
+                <i class="bi bi-arrow-return-left"></i> Return Orders
+                <span id="returns-badge" class="badge bg-danger rounded-pill ms-2" style="display:none; font-size: 0.75rem;">0</span>
+            </span>
+            <i class="bi bi-chevron-down menu-arrow"></i>
+        </a>
+        <div class="collapse submenu" id="returnMenu" data-bs-parent="#adminSidebar">
+            <a href="/admin/returns/view"><i class="bi bi-circle"></i> View Returns</a>
+        </div>
     <% } %>
 
     <!-- Custom Requests Menu -->
@@ -332,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         else if(id === 'stock'){localStorage.removeItem('admin_unacknowledged_stock_count'); if(typeof unacknowledgedStockCount !== 'undefined') unacknowledgedStockCount=0;} 
                         else if(id === 'custom'){localStorage.removeItem('admin_unacknowledged_custom_req_count'); if(typeof unacknowledgedCustomReqCount !== 'undefined') unacknowledgedCustomReqCount=0; const b = document.getElementById('custom-badge'); if(b) b.style.display='none';} 
                         else if(id === 'reviews'){localStorage.removeItem('admin_unacknowledged_review_count'); if(typeof unacknowledgedReviewCount !== 'undefined') unacknowledgedReviewCount=0; const b = document.getElementById('reviews-badge'); if(b) b.style.display='none';}
+                        else if(id === 'returns'){localStorage.removeItem('admin_unacknowledged_return_count'); if(typeof unacknowledgedReturnCount !== 'undefined') unacknowledgedReturnCount=0; const b = document.getElementById('returns-badge'); if(b) b.style.display='none';}
                     }
                 });
             }
@@ -396,6 +412,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Custom Requests Polling State ---
     let lastCustomReqId = localStorage.getItem('admin_last_custom_req_id') || 'null';
     let unacknowledgedCustomReqCount = parseInt(localStorage.getItem('admin_unacknowledged_custom_req_count')) || 0;
+    
+    // --- Returns Polling State ---
+    let lastReturnId = localStorage.getItem('admin_last_return_id') || 'null';
+    let unacknowledgedReturnCount = parseInt(localStorage.getItem('admin_unacknowledged_return_count')) || 0;
     
     function checkNewOrders() {
         fetch('/admin/api/orders/check-new?lastOrderId=' + lastOrderId)
@@ -565,6 +585,46 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(err => console.error("Error polling custom requests:", err));
+
+        // --- 5. Poll for Returns ---
+        fetch(`/admin/api/returns/check-new?lastReturnId=${lastReturnId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.returns) {
+                if (lastReturnId === 'null') {
+                    if (data.returns.max_id !== null) {
+                        lastReturnId = data.returns.max_id;
+                        localStorage.setItem('admin_last_return_id', lastReturnId);
+                    }
+                } else {
+                    if (data.returns.new_count > 0) {
+                        const newReturns = data.returns.new_count;
+                        unacknowledgedReturnCount += newReturns;
+                        
+                        lastReturnId = data.returns.max_id;
+                        localStorage.setItem('admin_last_return_id', lastReturnId);
+                        localStorage.setItem('admin_unacknowledged_return_count', unacknowledgedReturnCount);
+                        
+                        window.showNotificationToast('returns', 'New Return Request!', `You have ${newReturns} new return request(s)!`, 'bi-arrow-return-left', 'warning');
+                        window.playNotificationSound();
+                        
+                        // Update badge
+                        const returnBadge = document.getElementById('returns-badge');
+                        if (returnBadge) {
+                            returnBadge.textContent = unacknowledgedReturnCount;
+                            returnBadge.style.display = 'inline-block';
+                            returnBadge.classList.add('pulse-badge');
+                            setTimeout(() => returnBadge.classList.remove('pulse-badge'), 2000);
+                        }
+                        
+                        if (window.location.pathname === '/admin/returns/view') {
+                            setTimeout(() => { if (window.silentPageReload) window.silentPageReload(); }, 2000);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(err => console.error("Error polling returns:", err));
     }
     
     // Check every 5 seconds
@@ -661,6 +721,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 reviewBadge.style.display = 'inline-block';
             }
             setTimeout(() => { window.showNotificationToast('reviews', 'New Customer Review!', `You have ${unacknowledgedReviewCount} new review(s)!`, 'bi-star-fill', 'success'); }, 500);
+        }
+
+        // Restore/Clear Returns
+        if (window.location.pathname === '/admin/returns/view') {
+            const returnBadge = document.getElementById('returns-badge');
+            if (returnBadge) returnBadge.style.display = 'none';
+            unacknowledgedReturnCount = 0;
+            setTimeout(() => {
+                localStorage.removeItem('admin_unacknowledged_return_count');
+            }, 1000);
+        } else if (unacknowledgedReturnCount > 0) {
+            const returnBadge = document.getElementById('returns-badge');
+            if (returnBadge) {
+                returnBadge.textContent = unacknowledgedReturnCount;
+                returnBadge.style.display = 'inline-block';
+            }
+            setTimeout(() => { window.showNotificationToast('returns', 'New Return Request!', `You have ${unacknowledgedReturnCount} new return request(s)!`, 'bi-arrow-return-left', 'warning'); }, 500);
         }
     });
 })();

@@ -43,7 +43,49 @@ const cancelUserOrder = (req, res) => {
     });
 };
 
+const trackOrder = (req, res) => {
+    const { orderId } = req.params;
+    if (!orderId) {
+        return res.status(400).json({ success: false, message: 'Order ID is required' });
+    }
+
+    orderModel.trackOrder(orderId, (err, order) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: 'Server error' });
+        }
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+        res.json({ success: true, order: order });
+    });
+};
+
+const requestReturn = (req, res) => {
+    const user = req.session.user;
+    if (!user || !user.id) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { order_id, reason, other_reason } = req.body;
+    const returnModel = require('../models/returnModel');
+    
+    returnModel.addReturnRequest(order_id, user.id, reason, other_reason, (err, result) => {
+        if (err) {
+            console.error("Return error:", err);
+            return res.status(500).json({ success: false, message: 'Failed to process return request' });
+        }
+        
+        const estPickup = result.estimated_pickup;
+        const pickupDateStr = estPickup.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        
+        res.json({ success: true, estimated_pickup: pickupDateStr });
+    });
+};
+
 module.exports = {
     viewUserOrdersPage,
-    cancelUserOrder
+    cancelUserOrder,
+    trackOrder,
+    requestReturn
 };

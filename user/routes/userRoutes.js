@@ -19,6 +19,9 @@ router.get('/user/art/:id', checkUser, artController.viewArtDetailsPage);
 // User Orders Routes
 router.get('/user/orders', checkUser, orderController.viewUserOrdersPage);
 router.put('/api/user/orders/:id/cancel', checkUser, orderController.cancelUserOrder);
+router.post('/api/orders/return', checkUser, orderController.requestReturn);
+router.get('/api/user/orders/track/:orderId', orderController.trackOrder); // Open to all for tracking
+
 
 // Reviews Routes
 const reviewController = require('../controller/reviewController');

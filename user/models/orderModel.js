@@ -3,9 +3,11 @@ const db = require('../config/db');
 const orderModel = {
     getUserOrders: (userId, callback) => {
         const query = `
-            SELECT o.* 
+            SELECT o.*, MAX(r.estimated_pickup) as estimated_pickup
             FROM orders o
+            LEFT JOIN returns r ON o.order_id = r.order_id
             WHERE o.user_id = ?
+            GROUP BY o.order_id
             ORDER BY o.created_at DESC
         `;
         db.query(query, [userId], (err, orders) => {
@@ -45,6 +47,21 @@ const orderModel = {
         const query = "UPDATE orders SET status = 'Cancelled' WHERE order_id = ? AND user_id = ? AND status IN ('Pending', 'Processing')";
         db.query(query, [orderId, userId], (err, result) => {
             callback(err, result);
+        });
+    },
+
+    trackOrder: (orderId, callback) => {
+        const query = `
+            SELECT o.order_id, o.status, o.created_at, o.total_amount, MAX(r.estimated_pickup) as estimated_pickup
+            FROM orders o
+            LEFT JOIN returns r ON o.order_id = r.order_id
+            WHERE o.order_id = ?
+            GROUP BY o.order_id
+        `;
+        db.query(query, [orderId], (err, results) => {
+            if (err) return callback(err, null);
+            if (results.length === 0) return callback(null, null);
+            callback(null, results[0]);
         });
     }
 };

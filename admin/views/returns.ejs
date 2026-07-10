@@ -1,0 +1,162 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    <div class="module-title">
+        <h2 class="module-heading">Manage Returns</h2>
+    </div>
+
+    <div class="table-card">
+        <style>
+            /* Transform standard table into a premium rounded card list */
+            .artist-table {
+                border-collapse: separate !important;
+                border-spacing: 0 12px !important;
+            }
+            .artist-table tbody tr {
+                background-color: #ffffff;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.02);
+                transition: all 0.3s ease;
+            }
+            .artist-table tbody td {
+                border-top: 1px solid #f1f2f4;
+                border-bottom: 1px solid #f1f2f4;
+                padding: 16px 12px !important;
+                background-color: transparent !important;
+            }
+            .artist-table tbody td:first-child {
+                border-left: 1px solid #f1f2f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .artist-table tbody td:last-child {
+                border-right: 1px solid #f1f2f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+            .status-indicator-approved td:first-child {
+                border-left: 5px solid #198754 !important;
+            }
+            .status-indicator-rejected td:first-child {
+                border-left: 5px solid #dc3545 !important;
+            }
+            .artist-table tbody tr:not(.status-indicator-approved):not(.status-indicator-rejected) td:first-child {
+                border-left: 5px solid transparent;
+            }
+        </style>
+        <div class="table-header">
+            <h5>All Return Requests</h5>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table artist-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Return ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Est. Pickup</th>
+                        <th>Requested Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (returns && returns.length > 0) { %>
+                        <% returns.forEach(ret => { %>
+                            <% 
+                                let rowClass = '';
+                                if (ret.status === 'Approved' || ret.status === 'Refunded') rowClass = 'status-indicator-approved';
+                                else if (ret.status === 'Rejected') rowClass = 'status-indicator-rejected';
+                            %>
+                            <tr class="<%= rowClass %>" id="row-<%= ret.return_id %>">
+                                <td class="fw-bold">#RET-<%= ret.return_id %></td>
+                                <td class="fw-bold text-primary">#ORD-<%= ret.order_id %></td>
+                                <td>
+                                    <div class="fw-bold"><%= ret.customer_name %></div>
+                                    <div class="small text-muted"><%= ret.phone_number || ret.customer_email %></div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold"><%= ret.reason %></div>
+                                    <% if (ret.reason === 'Other') { %>
+                                        <div class="small text-muted fst-italic">"<%= ret.other_reason %>"</div>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm status-select" style="width: 140px; font-weight: 600;" data-id="<%= ret.return_id %>">
+                                        <option value="Pending" <%= ret.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                        <option value="Approved" <%= ret.status === 'Approved' ? 'selected' : '' %>>Approved</option>
+                                        <option value="Picked Up" <%= ret.status === 'Picked Up' ? 'selected' : '' %>>Picked Up</option>
+                                        <option value="Refunded" <%= ret.status === 'Refunded' ? 'selected' : '' %>>Refunded</option>
+                                        <option value="Rejected" <%= ret.status === 'Rejected' ? 'selected' : '' %>>Rejected</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <% 
+                                        const pickupDate = new Date(ret.estimated_pickup);
+                                        const formattedPickup = pickupDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                    %>
+                                    <div class="fw-bold text-dark"><i class="bi bi-truck me-1"></i><%= formattedPickup %></div>
+                                </td>
+                                <td>
+                                    <% 
+                                        const reqDate = new Date(ret.created_at);
+                                        const formattedReqDate = reqDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                    %>
+                                    <div class="small text-muted"><i class="bi bi-calendar3 me-1"></i><%= formattedReqDate %></div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No returns found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Handle Status Change
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const returnId = this.getAttribute('data-id');
+            const newStatus = this.value;
+            
+            // Visual feedback
+            this.style.opacity = '0.5';
+
+            fetch(`/admin/api/returns/update-status/${returnId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.style.opacity = '1';
+                if (!data.success) {
+                    if (window.showActionToast) window.showActionToast('ret-err', 'Error', 'Failed to update status', 'bi-exclamation-triangle-fill', 'danger');
+                } else {
+                    if (window.showActionToast) window.showActionToast('ret-succ', 'Updated', 'Return status updated successfully', 'bi-check-circle-fill', 'success');
+                    
+                    const row = document.getElementById('row-' + returnId);
+                    if (row) {
+                        row.classList.remove('status-indicator-approved', 'status-indicator-rejected');
+                        if (newStatus === 'Approved' || newStatus === 'Refunded') row.classList.add('status-indicator-approved');
+                        else if (newStatus === 'Rejected') row.classList.add('status-indicator-rejected');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                this.style.opacity = '1';
+                if (window.showActionToast) window.showActionToast('ret-err2', 'Error', 'Error updating status', 'bi-exclamation-triangle-fill', 'danger');
+            });
+        });
+    });
+</script>
+</body>
+</html>
