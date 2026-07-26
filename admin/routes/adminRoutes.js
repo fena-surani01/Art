@@ -170,10 +170,12 @@ router.post('/api/notifications/mark-all-read', auth, notificationController.mar
 // Location Routes (States & Cities)
 router.get('/locations/states', auth, locationController.getStatesPage);
 router.post('/api/locations/states/add', auth, locationController.addState);
+router.put('/api/locations/states/toggle/:id', auth, locationController.toggleStateStatus);
 router.delete('/api/locations/states/:id', auth, locationController.deleteState);
 
 router.get('/locations/cities', auth, locationController.getCitiesPage);
 router.post('/api/locations/cities/add', auth, locationController.addCity);
+router.put('/api/locations/cities/toggle/:id', auth, locationController.toggleCityStatus);
 router.delete('/api/locations/cities/:id', auth, locationController.deleteCity);
 
 router.get('/logout', authController.logout);

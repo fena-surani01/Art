@@ -15,9 +15,10 @@
                 <thead class="table-light">
                     <tr>
                         <th width="10%">ID</th>
-                        <th width="40%">City Name</th>
-                        <th width="30%">State</th>
-                        <th width="20%" class="text-end">Actions</th>
+                        <th width="35%">City Name</th>
+                        <th width="25%">State</th>
+                        <th width="15%">Status</th>
+                        <th width="15%" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,6 +28,15 @@
                                 <td>#<%= city.id %></td>
                                 <td class="fw-bold"><%= city.city_name %></td>
                                 <td><span class="badge bg-secondary"><%= city.state_name %></span></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input toggle-city-status" type="checkbox" role="switch" 
+                                               data-id="<%= city.id %>" <%= (city.is_active === 1 || city.is_active === true || city.is_active === undefined) ? 'checked' : '' %> style="cursor: pointer; transform: scale(1.2);">
+                                        <label class="form-check-label fw-semibold ms-2 <%= (city.is_active === 1 || city.is_active === true || city.is_active === undefined) ? 'text-success' : 'text-danger' %>">
+                                            <%= (city.is_active === 1 || city.is_active === true || city.is_active === undefined) ? 'Active' : 'Inactive' %>
+                                        </label>
+                                    </div>
+                                </td>
                                 <td class="text-end">
                                     <button class="btn btn-sm btn-outline-danger delete-city-btn" data-id="<%= city.id %>">
                                         <i class="bi bi-trash"></i> Delete
@@ -36,7 +46,7 @@
                         <% }) %>
                     <% } else { %>
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">No cities found.</td>
+                            <td colspan="5" class="text-center py-5 text-muted">No cities found.</td>
                         </tr>
                     <% } %>
                 </tbody>
@@ -119,6 +129,34 @@ document.querySelectorAll('.delete-city-btn').forEach(btn => {
         .then(data => {
             if (data.success) window.location.reload();
             else { alert(data.message); this.disabled = false; }
+        });
+    });
+});
+
+document.querySelectorAll('.toggle-city-status').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+        const id = this.getAttribute('data-id');
+        const label = this.nextElementSibling;
+        
+        fetch(`/admin/api/locations/cities/toggle/${id}`, { method: 'PUT' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (this.checked) {
+                    label.innerText = 'Active';
+                    label.className = 'form-check-label fw-semibold ms-2 text-success';
+                } else {
+                    label.innerText = 'Inactive';
+                    label.className = 'form-check-label fw-semibold ms-2 text-danger';
+                }
+            } else {
+                alert(data.message || 'Error updating status');
+                this.checked = !this.checked;
+            }
+        })
+        .catch(() => {
+            alert('Error updating status');
+            this.checked = !this.checked;
         });
     });
 });

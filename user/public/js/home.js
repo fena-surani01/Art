@@ -10,6 +10,12 @@ async function loadReviews() {
         const data = await response.json();
         
         if (data.success && data.reviews && data.reviews.length > 0) {
+            // Randomize reviews sequence on every page load
+            for (let i = data.reviews.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [data.reviews[i], data.reviews[j]] = [data.reviews[j], data.reviews[i]];
+            }
+
             document.getElementById('reviewsSection').style.display = 'block';
             let html = '';
             
@@ -90,6 +96,12 @@ async function loadReviews() {
 async function loadArts() {
     const response = await fetch('/api/arts')
     const arts = await response.json()
+
+    // Randomize sequence of art cards on page load
+    for (let i = arts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arts[i], arts[j]] = [arts[j], arts[i]];
+    }
 
     let cartItemIds = [];
     try {

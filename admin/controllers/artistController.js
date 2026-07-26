@@ -101,7 +101,7 @@ exports.getSingleArtistAPI = (req, res) => {
 // Edit 
 exports.updateArtistAPI = (req, res) => {
     const artist_id = req.params.id;
-    const { artist_name, gender, email, password, salary, join_date } = req.body;
+    const { artist_name, gender, description, email, password, salary, join_date } = req.body;
 
     if (!artist_name || !gender || !email) {
         return res.json({
@@ -110,7 +110,7 @@ exports.updateArtistAPI = (req, res) => {
         });
     }
 
-    artistModel.updateArtist(artist_id, artist_name, gender, email, password, salary || 0, join_date || null, (err, result) => {
+    artistModel.updateArtist(artist_id, artist_name, gender, description || null, email, password, salary || 0, join_date || null, (err, result) => {
         if (err) {
             return res.json({
                 status: 'error',

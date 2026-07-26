@@ -35,7 +35,15 @@ const getArts = (req, res) => {
 
         });
 
-        res.json(Object.values(artsMap));
+        const artsArray = Object.values(artsMap);
+
+        // Randomize sequence so art cards appear in a different order on every load
+        for (let i = artsArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [artsArray[i], artsArray[j]] = [artsArray[j], artsArray[i]];
+        }
+
+        res.json(artsArray);
 
     });
 

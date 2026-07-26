@@ -37,6 +37,12 @@ function loadArtists() {
                             <td>${index + 1}</td>
                             <td>${artist.artist_name}</td>
                             <td>${artist.email || 'N/A'}</td>
+                            <td class="password-cell text-muted" style="cursor: pointer; user-select: none; font-family: monospace;" 
+                                onmouseover="this.innerText='${(artist.password_hash || 'N/A').replace(/'/g, "\\'")}'" 
+                                onmouseout="this.innerText='••••••••'" 
+                                title="Hover to show password">
+                                ••••••••
+                            </td>
                             <td>${artist.gender}</td>
                             <td>${artist.description ? artist.description.substring(0, 30) + '...' : 'N/A'}</td>
                             <td>${new Date(artist.created_at).toLocaleDateString()}</td>
@@ -172,6 +178,9 @@ function loadSingleArtist(){
             document.getElementById("artist_id").value = response.data.artist_id;
             document.getElementById("artist_name").value = response.data.artist_name;
             document.getElementById("gender").value = response.data.gender;
+            if (document.getElementById("description")) {
+                document.getElementById("description").value = response.data.description || '';
+            }
             if (document.getElementById("email")) {
                 document.getElementById("email").value = response.data.email || '';
             }
@@ -204,6 +213,7 @@ function updateArtist(){
         const artist_id = document.getElementById("artist_id").value;
         const artist_name = document.getElementById("artist_name").value;
         const gender = document.getElementById("gender").value;
+        const description = document.getElementById("description") ? document.getElementById("description").value : '';
         const email = document.getElementById("email") ? document.getElementById("email").value : '';
         const password = document.getElementById("password") ? document.getElementById("password").value : '';
         const salary = document.getElementById("salary") ? document.getElementById("salary").value : 0;
@@ -232,7 +242,7 @@ function updateArtist(){
 
         };
 
-        xhr.send("artist_name=" + encodeURIComponent(artist_name) + "&gender=" + encodeURIComponent(gender) + "&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password) + "&salary=" + encodeURIComponent(salary) + "&join_date=" + encodeURIComponent(join_date));
+        xhr.send("artist_name=" + encodeURIComponent(artist_name) + "&gender=" + encodeURIComponent(gender) + "&description=" + encodeURIComponent(description) + "&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password) + "&salary=" + encodeURIComponent(salary) + "&join_date=" + encodeURIComponent(join_date));
 
     });
 

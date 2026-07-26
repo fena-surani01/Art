@@ -82,6 +82,26 @@ const locationController = {
             if (err) return res.json({ success: false, message: 'Error deleting city.' });
             res.json({ success: true, message: 'City deleted successfully' });
         });
+    },
+
+    toggleStateStatus: (req, res) => {
+        if (!req.session.admin) return res.status(401).json({ success: false });
+        
+        const { id } = req.params;
+        db.query("UPDATE states SET is_active = IF(is_active = 1, 0, 1) WHERE id = ?", [id], (err, result) => {
+            if (err) return res.json({ success: false, message: 'Error updating state status.' });
+            res.json({ success: true, message: 'State status updated successfully' });
+        });
+    },
+
+    toggleCityStatus: (req, res) => {
+        if (!req.session.admin) return res.status(401).json({ success: false });
+        
+        const { id } = req.params;
+        db.query("UPDATE cities SET is_active = IF(is_active = 1, 0, 1) WHERE id = ?", [id], (err, result) => {
+            if (err) return res.json({ success: false, message: 'Error updating city status.' });
+            res.json({ success: true, message: 'City status updated successfully' });
+        });
     }
 };
 

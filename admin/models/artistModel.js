@@ -27,12 +27,12 @@ exports.getArtistById = (artist_id, callback)=>{
 }
 
 // Edit
-exports.updateArtist = (artist_id, artist_name, gender, email, password, salary, join_date, callback) => {
+exports.updateArtist = (artist_id, artist_name, gender, description, email, password, salary, join_date, callback) => {
     let sql = `
         UPDATE artists 
-        SET artist_name = ?, gender = ?, email = ?, salary = ?, join_date = ?
+        SET artist_name = ?, gender = ?, description = ?, email = ?, salary = ?, join_date = ?
     `;
-    const params = [artist_name, gender, email, salary, join_date];
+    const params = [artist_name, gender, description || null, email, salary, join_date];
 
     if (password && password.trim() !== '') {
         sql += `, password_hash = ? `;
