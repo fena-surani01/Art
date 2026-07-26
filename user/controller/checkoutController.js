@@ -90,6 +90,31 @@ const processCheckout = (req, res) => {
                                 console.error("Clear Cart Error:", err);
                             }
                             
+                            // Send Confirmation Email
+                            const db = require('../config/db');
+                            db.query("SELECT name, email FROM user WHERE id = ?", [user.id], (uErr, uRes) => {
+                                const userEmail = (uRes && uRes.length > 0 && uRes[0].email) ? uRes[0].email : user.email;
+                                const userName = (uRes && uRes.length > 0 && uRes[0].name) ? uRes[0].name : (user.name || 'Customer');
+                                
+                                if (userEmail) {
+                                    console.log(`[Checkout Email] 📬 Dispatching confirmation email TO customer login email: ${userEmail} for Order #${orderId}`);
+                                    const estDate = new Date();
+                                    estDate.setDate(estDate.getDate() + 5);
+                                    const estDateStr = estDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                                    
+                                    const emailService = require('../config/emailService');
+                                    emailService.sendOrderConfirmationEmail({
+                                        toEmail: userEmail,
+                                        customerName: userName,
+                                        orderId: orderId,
+                                        isCustom: false,
+                                        details: { price: finalTotal.toFixed(2), estDeliveryDate: estDateStr }
+                                    });
+                                } else {
+                                    console.error(`[Checkout Email] ❌ No email found for user ID: ${user.id}`);
+                                }
+                            });
+
                             // Checkout Complete!
                             res.json({ success: true, message: 'Order placed successfully!', orderId: orderId });
                         });

@@ -29,6 +29,32 @@ const updateOrderStatusAPI = (req, res) => {
             console.error(err);
             return res.status(500).json({ success: false, message: 'Failed to update status' });
         }
+
+        // If status changed to 'Delivered', send Order Delivered Email with Review Link
+        if (status === 'Delivered') {
+            const db = require('../config/db');
+            const emailService = require('../config/emailService');
+            const query = `
+                SELECT u.name as customer_name, u.email as customer_email
+                FROM orders o
+                JOIN user u ON o.user_id = u.id
+                WHERE o.order_id = ?
+            `;
+            db.query(query, [id], (uErr, uRes) => {
+                if (!uErr && uRes && uRes.length > 0 && uRes[0].customer_email) {
+                    console.log(`[Admin Order Update] 📬 Dispatching delivery email TO customer login email: ${uRes[0].customer_email} for Order #${id}`);
+                    emailService.sendOrderDeliveredEmail({
+                        toEmail: uRes[0].customer_email,
+                        customerName: uRes[0].customer_name,
+                        orderId: id,
+                        isCustom: false
+                    });
+                } else {
+                    console.error(`[Admin Order Update] ❌ Failed to fetch customer email for order #${id}:`, uErr);
+                }
+            });
+        }
+
         res.json({ success: true, message: 'Status updated successfully' });
     });
 };

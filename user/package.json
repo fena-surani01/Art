@@ -15,11 +15,13 @@
     "dotenv": "^17.4.2",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
+    "express-mysql-session": "^3.0.3",
     "express-session": "^1.19.0",
     "imagekit": "^6.0.0",
     "multer": "^2.2.0",
     "mysql2": "^3.22.3",
     "node-telegram-bot-api": "^1.1.2",
+    "nodemailer": "^9.0.3",
     "socket.io": "^4.8.3"
   }
 }

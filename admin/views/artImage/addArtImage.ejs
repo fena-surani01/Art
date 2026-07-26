@@ -14,17 +14,35 @@
         <form id="addArtImageForm" enctype="multipart/form-data">
 
             <div class="mb-3">
-                <label class="form-label">Select Art</label>
+                <label class="form-label">Art Category</label>
+                <select id="category" name="category" class="form-control">
+                    <option value="">Select Category</option>
+                    <option value="Art">Art</option>
+                    <option value="Custom Art">Custom Art</option>
+                </select>
+            </div>
 
+            <div class="mb-3" id="art_select_box" style="display: none;">
+                <label class="form-label">Select Art</label>
                 <select id="art_id" name="art_id" class="form-control">
                     <option value="">Select Art</option>
-
                     <% arts.forEach(art => { %>
                         <option value="<%= art.art_id %>">
                             <%= art.title %>
                         </option>
                     <% }) %>
+                </select>
+            </div>
 
+            <div class="mb-3" id="custom_art_select_box" style="display: none;">
+                <label class="form-label">Select Custom Art</label>
+                <select id="custom_request_id" name="custom_request_id" class="form-control">
+                    <option value="">Select Custom Art</option>
+                    <% customRequests.forEach(req => { %>
+                        <option value="<%= req.request_id %>">
+                            REQ-<%= req.request_id %> - <%= req.customer_name %>
+                        </option>
+                    <% }) %>
                 </select>
             </div>
 

@@ -6,19 +6,17 @@
             Fenaria
         </div>
 
-        <p class="footer-tagline">
-            Where art finds its true admirers.
-        </p>
-
         <div class="footer-links">
 
             <a href="/user/home">Home</a>
 
-            <a href="/user/artists">Artists</a>
+            <a href="/user/artists">Artist</a>
 
-            <a href="/user/collections">Collections</a>
+            <a href="/user/custom-art">Custom Art</a>
 
-            <a href="/user/orders">Orders</a>
+            <a href="/user/orders">Order</a>
+
+            <a href="/happy-customers">Happy Customer</a>
 
         </div>
 
@@ -31,7 +29,7 @@
         </div>
 
         <div class="footer-bottom">
-            © 2025 Fenaria. All rights reserved.
+            © 2026 Fenaria. All rights reserved.
         </div>
 
     </div>
@@ -118,6 +116,7 @@
 
                 <input type="hidden" id="reviewOrderId">
                 <input type="hidden" id="reviewArtId">
+                <input type="hidden" id="reviewCustomRequestId">
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal"
@@ -248,11 +247,13 @@
     }
 
     .support-panel {
-        position: absolute;
-        bottom: 90px;
-        right: 0;
-        width: 450px;
-        height: 700px;
+        position: fixed;
+        bottom: 110px;
+        right: 30px;
+        width: 420px;
+        max-width: calc(100vw - 40px);
+        height: 600px;
+        max-height: calc(100vh - 140px);
         background: #f8f9fa;
         border-radius: 24px;
         overflow: hidden;
@@ -264,6 +265,28 @@
         opacity: 0;
         border: 1px solid rgba(0, 0, 0, 0.1);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 576px) {
+        .support-widget-container {
+            bottom: 15px;
+            right: 15px;
+        }
+        .support-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
+        }
+        .support-panel {
+            right: 15px;
+            left: 15px;
+            bottom: 85px;
+            width: auto;
+            max-width: none;
+            height: calc(100vh - 110px);
+            max-height: 550px;
+            border-radius: 16px;
+        }
     }
 
     .support-panel.show {
@@ -340,9 +363,10 @@
     }
 
     function showReviewModal(item) {
-        document.getElementById('reviewOrderId').value = item.order_id;
-        document.getElementById('reviewArtId').value = item.art_id;
-        document.getElementById('reviewArtTitle').innerText = item.title;
+        document.getElementById('reviewOrderId').value = item.order_id || '';
+        document.getElementById('reviewArtId').value = item.art_id || '';
+        document.getElementById('reviewCustomRequestId').value = item.custom_request_id || '';
+        document.getElementById('reviewArtTitle').innerText = item.title || 'Artwork';
         document.getElementById('reviewArtImage').src = item.image_path || '/images/default-art.jpg';
 
         // Reset form
@@ -360,6 +384,7 @@
     function submitReview() {
         const orderId = document.getElementById('reviewOrderId').value;
         const artId = document.getElementById('reviewArtId').value;
+        const customRequestId = document.getElementById('reviewCustomRequestId').value;
         const comment = document.getElementById('reviewComment').value;
 
         // Find checked rating
@@ -379,7 +404,13 @@
         fetch('/api/user/reviews/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_id: orderId, art_id: artId, rating, comment })
+            body: JSON.stringify({ 
+                order_id: orderId || null, 
+                art_id: artId || null, 
+                custom_request_id: customRequestId || null, 
+                rating, 
+                comment 
+            })
         })
             .then(res => res.json())
             .then(data => {
@@ -420,11 +451,17 @@
     // Initialize Socket.io
     const socket = io();
 
+    const currentUserId = <%= typeof user !== 'undefined' && user && user.id ? user.id : "'guest'" %>;
+    const chatStorageKey = 'fenaria_chat_history_' + currentUserId;
+
+    // Remove legacy unpartitioned storage key if present
+    localStorage.removeItem('fenaria_chat_history');
+
     // Chat History Persistence
-    let chatHistory = JSON.parse(localStorage.getItem('fenaria_chat_history')) || [];
+    let chatHistory = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
 
     function saveChatHistory() {
-        localStorage.setItem('fenaria_chat_history', JSON.stringify(chatHistory));
+        localStorage.setItem(chatStorageKey, JSON.stringify(chatHistory));
     }
 
     function loadChatHistory() {
@@ -452,7 +489,7 @@
                 }
             } catch (error) {
                 console.error("Failed to load chat history:", error);
-                localStorage.removeItem('fenaria_chat_history'); // Clear corrupt history
+                localStorage.removeItem(chatStorageKey); // Clear corrupt history
                 chatHistory = [];
             }
         }
@@ -460,7 +497,7 @@
 
     function clearChat() {
         if (confirm('Are you sure you want to completely clear the chat history?')) {
-            localStorage.removeItem('fenaria_chat_history');
+            localStorage.removeItem(chatStorageKey);
             window.location.reload();
         }
     }
@@ -543,7 +580,7 @@
         disableOldButtons();
         appendMessage(displayLabel || actionText, 'user');
         showTypingIndicator();
-        const userId = <%= typeof user !== 'undefined' && user ? user.id : 'null' %>;
+        const userId = <%= typeof user !== 'undefined' && user && user.id ? user.id : 'null' %>;
         socket.emit('chatMessage', { text: actionText, userId: userId });
     }
 
@@ -566,7 +603,7 @@
         disableOldButtons();
         appendMessage(text, 'user');
         showTypingIndicator();
-        const userId = <%= typeof user !== 'undefined' && user ? user.id : 'null' %>;
+        const userId = <%= typeof user !== 'undefined' && user && user.id ? user.id : 'null' %>;
         socket.emit('chatMessage', { text: text, userId: userId });
         input.value = '';
         toggleSendButton();

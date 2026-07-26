@@ -23,11 +23,26 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const MySQLStore = require('express-mysql-session')(session);
+const fs = require('fs');
+
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: {
+        ca: fs.readFileSync(__dirname + '/../ca.pem').toString()
+    }
+});
+
 app.use(session({
     name: 'admin_session',
     secret: 'art-secret-key',
+    store: sessionStore,
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
 }));
 
 app.use('/admin', adminRoutes);

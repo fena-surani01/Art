@@ -32,12 +32,32 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Shared uploads folder
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+const MySQLStore = require('express-mysql-session')(session);
+const fs = require('fs');
+
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: {
+        ca: fs.readFileSync(__dirname + '/../ca.pem').toString()
+    }
+});
+
 app.use(session({
     name: 'user_session',
     secret: 'artwebsite',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false
 }));
+
+app.use((req, res, next) => {
+    res.locals.user = req.session ? req.session.user : null;
+    next();
+});
 
 app.use('/', authRoutes);
 app.use('/', artRoutes);
@@ -75,4 +95,8 @@ server.listen(6070, () => {
         if (err) console.error("Failed to reset online status on startup", err);
         else console.log("Reset all online statuses to offline.");
     });
+
+    // Initialize delivery reminder cron
+    const { initDeliveryReminderCron } = require('./utils/deliveryReminderCron');
+    initDeliveryReminderCron();
 });

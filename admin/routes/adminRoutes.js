@@ -159,6 +159,7 @@ router.put('/api/custom-requests/update-status/:id', auth, customRequestControll
 router.put('/api/custom-requests/update-artist-status/:id', auth, customRequestController.updateArtistStatus);
 router.get('/api/custom-requests/check-new', auth, customRequestController.checkNewRequests);
 router.put('/api/custom-requests/assign/:id', auth, customRequestController.assignCustomRequest);
+router.put('/api/custom-requests/toggle-gallery/:id', auth, customRequestController.toggleGalleryStatus);
 
 // Notifications Routes
 const notificationController = require('../controllers/notificationController');

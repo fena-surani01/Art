@@ -56,6 +56,31 @@ const updateCustomRequestStatus = (req, res) => {
             console.error("Error updating custom request status:", err);
             return res.status(500).json({ success: false, message: 'Database error' });
         }
+
+        // If status changed to 'Delivered', send Order Delivered Email with Review Link
+        if (status === 'Delivered') {
+            const emailService = require('../config/emailService');
+            const uQuery = `
+                SELECT u.name as customer_name, u.email as customer_email
+                FROM custom_requests cr
+                JOIN user u ON cr.user_id = u.id
+                WHERE cr.request_id = ?
+            `;
+            db.query(uQuery, [id], (uErr, uRes) => {
+                if (!uErr && uRes && uRes.length > 0 && uRes[0].customer_email) {
+                    console.log(`[Admin Custom Request Update] 📬 Dispatching delivery email TO customer login email: ${uRes[0].customer_email} for Custom Request #${id}`);
+                    emailService.sendOrderDeliveredEmail({
+                        toEmail: uRes[0].customer_email,
+                        customerName: uRes[0].customer_name,
+                        orderId: id,
+                        isCustom: true
+                    });
+                } else {
+                    console.error(`[Admin Custom Request Update] ❌ Failed to fetch customer email for request #${id}:`, uErr);
+                }
+            });
+        }
+
         res.json({ success: true, message: 'Status updated successfully' });
     });
 };
@@ -123,10 +148,29 @@ const checkNewRequests = (req, res) => {
     });
 };
 
+const toggleGalleryStatus = (req, res) => {
+    if (!req.session.admin || req.session.admin.role !== 'admin') {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+    const { show_in_gallery } = req.body;
+
+    const query = `UPDATE custom_requests SET show_in_gallery = ? WHERE request_id = ?`;
+    db.query(query, [show_in_gallery ? 1 : 0, id], (err, result) => {
+        if (err) {
+            console.error("Error updating gallery status:", err);
+            return res.status(500).json({ success: false, message: 'Database error' });
+        }
+        res.json({ success: true, message: 'Gallery status updated successfully' });
+    });
+};
+
 module.exports = {
     viewCustomRequestsPage,
     updateCustomRequestStatus,
     updateArtistStatus,
     checkNewRequests,
-    assignCustomRequest
+    assignCustomRequest,
+    toggleGalleryStatus
 };

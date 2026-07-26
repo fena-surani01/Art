@@ -6,10 +6,6 @@ body{
     overflow-x:hidden;
 }
 
-.nav-link:hover{
-    color:white !important;
-}
-
 .hero-section{
     background:#f8f9fa;
     padding:100px 0;
@@ -22,6 +18,16 @@ body{
 .card:hover{
     transform:translateY(-5px);
 }
+
+.art-card {
+    border: none !important;
+    border-top: 4px solid #000000 !important;
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
 .navbar-brand{
     font-size:1.5rem;
     letter-spacing:1px;
@@ -30,10 +36,6 @@ body{
 .nav-link{
     margin-left:10px;
     margin-right:10px;
-}
-
-.nav-link:hover{
-    color:white !important;
 }
 
 .highlight {
@@ -676,3 +678,42 @@ body{
     width:35px;
     opacity:1;
 }
+
+/* ==========================
+   GLOBAL MOBILE RESPONSIVENESS
+========================== */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 52px !important;
+        line-height: 56px !important;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem !important;
+    }
+    .art-card-img {
+        height: 250px !important;
+    }
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .section-title {
+        font-size: 2.2rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 40px !important;
+        line-height: 44px !important;
+    }
+    .hero-section {
+        padding: 30px 0 50px !important;
+    }
+    .art-card-img {
+        height: 220px !important;
+    }
+}

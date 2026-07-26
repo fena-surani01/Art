@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadReviews();
 })
 
-// Fetch Approved Reviews
+// Fetch Approved Reviews (Grouped per Art, 2 cards per row)
 async function loadReviews() {
     try {
         const response = await fetch('/api/reviews/approved');
@@ -13,24 +13,67 @@ async function loadReviews() {
             document.getElementById('reviewsSection').style.display = 'block';
             let html = '';
             
-            data.reviews.forEach(review => {
-                let stars = '';
-                for(let i=1; i<=5; i++) {
-                    stars += `<i class="bi bi-star-fill ${i <= review.rating ? 'text-warning' : 'text-muted opacity-25'}"></i>`;
+            data.reviews.forEach(art => {
+                let starsHtml = '';
+                const roundedRating = Math.round(Number(art.avg_rating));
+                for (let i = 1; i <= 5; i++) {
+                    starsHtml += `<i class="bi bi-star-fill ${i <= roundedRating ? 'text-warning' : 'text-muted opacity-25'}"></i>`;
                 }
+
+                let commentsHtml = '';
+                art.comments.forEach(c => {
+                    let commentStars = '';
+                    for (let i = 1; i <= 5; i++) {
+                        commentStars += `<i class="bi bi-star-fill ${i <= c.rating ? 'text-warning' : 'text-muted opacity-25'}" style="font-size: 0.8rem;"></i>`;
+                    }
+                    
+                    commentsHtml += `
+                    <div class="p-3 mb-2 rounded-3 bg-light border">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-dark small"><i class="bi bi-person-circle me-1 text-secondary"></i>${c.customer_name}</span>
+                            <div>${commentStars}</div>
+                        </div>
+                        <p class="text-secondary mb-0 small fst-italic" style="font-family: 'Inter', sans-serif;">"${c.comment}"</p>
+                    </div>
+                    `;
+                });
                 
                 html += `
-                <div class="col-lg-4 col-md-6">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4" style="background: linear-gradient(145deg, #ffffff, #fdfdfd);">
+                <div class="col-md-6 col-lg-6">
+                    <div class="card shadow-sm rounded-4 p-4 h-100" style="background: #ffffff; border: none !important; border-top: 5px solid #DDCEF5 !important; min-height: 290px;">
+                        
+                        <!-- First Row: Image and Art Name -->
                         <div class="d-flex align-items-center mb-3">
-                            <img src="${review.art_image || '/images/default-art.jpg'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;" class="shadow-sm me-3">
-                            <div>
-                                <h6 class="fw-bold mb-0">${review.customer_name}</h6>
-                                <small class="text-muted">on ${review.art_title}</small>
+                            <a href="/user/art/${art.art_id}" class="me-3 flex-shrink-0 text-decoration-none">
+                                <img src="${art.art_image || '/images/default-art.jpg'}" 
+                                     alt="${art.art_title}" 
+                                     class="rounded-3 shadow-sm" 
+                                     style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                            </a>
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-1">
+                                    <a href="/user/art/${art.art_id}" class="text-dark text-decoration-none">
+                                        ${art.art_title}
+                                    </a>
+                                </h5>
+                                <a href="/user/art/${art.art_id}" class="btn btn-sm btn-outline-dark rounded-pill px-3 py-1 mt-1" style="font-size: 0.8rem;">
+                                    <i class="bi bi-eye me-1"></i> View Details
+                                </a>
                             </div>
                         </div>
-                        <div class="mb-3">${stars}</div>
-                        <p class="text-dark mb-0 mt-2" style="font-family: 'Caveat', cursive; font-size: 1.7rem; line-height: 1.2;">"${review.comment}"</p>
+
+                        <!-- Star Rating & Review Count -->
+                        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                            <div class="text-warning fs-5">${starsHtml}</div>
+                            <span class="fw-bold text-dark fs-6">${art.avg_rating} / 5</span>
+                            <span class="text-muted small">(${art.review_count} ${art.review_count === 1 ? 'Review' : 'Reviews'})</span>
+                        </div>
+
+                        <!-- Scrollable Comments Section -->
+                        <div class="comments-scroll-area flex-grow-1 pe-1" style="max-height: 180px; overflow-y: auto;">
+                            ${commentsHtml}
+                        </div>
+
                     </div>
                 </div>
                 `;
@@ -66,7 +109,7 @@ async function loadArts() {
 
        <div class="col-lg-4 col-md-6 mb-4">
 
-            <div class="art-card position-relative overflow-hidden" style="${art.stock <= 0 ? 'border-top: 4px solid #dc3545; filter: grayscale(0.3); opacity: 0.9;' : ''}">
+            <div class="art-card position-relative overflow-hidden" style="border: none !important; ${art.stock <= 0 ? 'border-top: 4px solid #dc3545 !important; filter: grayscale(0.3); opacity: 0.9;' : 'border-top: 4px solid #000000 !important;'}">
 
                 ${art.stock <= 0 ? `
                     <div class="position-absolute top-0 end-0 bg-danger text-white px-3 py-1 fw-bold shadow-sm" style="z-index: 10; border-bottom-left-radius: 8px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">
@@ -128,19 +171,25 @@ async function loadArts() {
 
                 </div>
 
-                <div class="art-info">
+                <div class="art-info p-3">
 
-                    <span class="art-category">
+                    <span class="badge bg-dark rounded-pill px-3 py-1 mb-2 d-inline-block" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
                         ${art.category}
                     </span>
 
-                    <h5 class="art-title">
+                    <h5 class="art-title fw-bold mb-1">
                         <a href="/user/art/${art.art_id}" class="text-decoration-none text-dark">${art.title}</a>
                     </h5>
 
-                    <p class="art-artist">
-                        By ${art.artist_name}
+                    <p class="art-artist text-muted small mb-2">
+                        By <span class="fw-semibold text-dark">${art.artist_name}</span>
                     </p>
+
+                    ${art.description ? `
+                    <p class="art-description text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; height: 2.8em;">
+                        ${art.description}
+                    </p>
+                    ` : '<div style="min-height: 2.8em;"></div>'}
 
                     <div class="d-flex justify-content-between align-items-center">
 

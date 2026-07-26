@@ -20,13 +20,13 @@ const processMessage = async (messageText, userId = null) => {
                 customArtModel.getCustomRequestsByUserId(userId, (err, requests) => {
                     if (err || !requests || requests.length === 0) {
                         resolve({
-                            text: "To track your Custom Art, please provide your Custom Art Request ID (e.g., REQ-123).",
+                            text: "No Custom Art requests found for your account.",
                             options: ["Orders", "Custom Art"]
                         });
                     } else {
                         const recentRequestIds = requests.slice(0, 3).map(r => `REQ-${r.request_id}`);
                         resolve({
-                            text: "Please select one of your recent Custom Art requests to track, or type your ID if it's not listed.",
+                            text: "Please select one of your recent Custom Art requests to track:",
                             options: recentRequestIds
                         });
                     }
@@ -35,13 +35,13 @@ const processMessage = async (messageText, userId = null) => {
                 db.query('SELECT request_id FROM custom_requests ORDER BY created_at DESC LIMIT 5', (err, requests) => {
                     if (err || !requests || requests.length === 0) {
                         resolve({
-                            text: "To track your Custom Art, please provide your Custom Art Request ID (e.g., REQ-123).",
+                            text: "No Custom Art requests found.",
                             options: ["Orders", "Custom Art"]
                         });
                     } else {
                         const recentRequestIds = requests.map(r => `REQ-${r.request_id}`);
                         resolve({
-                            text: "Please select one of your recent Custom Art requests to track, or type your ID if it's not listed.",
+                            text: "Please select one of the recent Custom Art requests to track:",
                             options: recentRequestIds
                         });
                     }
@@ -79,13 +79,13 @@ const processMessage = async (messageText, userId = null) => {
                     if (err) {
                         console.error('Error tracking order via bot:', err);
                         resolve({
-                            text: `Oops, something went wrong while trying to find order ${displayOrderId}.`,
-                            options: ["Track Order", "Cancel Order", "Return Order"]
+                            text: `Oops, something went wrong while trying to find order **${displayOrderId}**.`,
+                            options: ["Orders", "Custom Art"]
                         });
                     } else if (!order) {
                         resolve({
-                            text: `I couldn't find an order with ID: ${displayOrderId}. Please check the ID and try again.`,
-                            options: ["Track Order", "Cancel Order", "Return Order"]
+                            text: `No order found matching ID **${displayOrderId}**.`,
+                            options: ["Orders", "Custom Art"]
                         });
                     } else {
                         const createdDate = new Date(order.created_at);
@@ -130,20 +130,20 @@ const processMessage = async (messageText, userId = null) => {
                     orderModel.getUserOrders(userId, (err, orders) => {
                         if (err || !orders || orders.length === 0) {
                             resolve({
-                                text: "Please provide your Order ID. You can find your Order ID in the 'Orders' section of your account (e.g., ORD-12345).",
-                                options: []
+                                text: "No orders found for your account.",
+                                options: ["Orders", "Custom Art"]
                             });
                         } else {
                             const trackableOrders = orders.filter(o => o.status !== 'Cancelled' && o.status !== 'Delivered');
                             if (trackableOrders.length === 0) {
                                 resolve({
-                                    text: "You don't have any active orders to track. Please provide an Order ID directly if you are looking for an older order.",
+                                    text: "You don't have any active orders to track right now.",
                                     options: ["Orders", "Custom Art"]
                                 });
                             } else {
                                 const recentOrderIds = trackableOrders.slice(0, 3).map(o => `ORD-${o.order_id}`);
                                 resolve({
-                                    text: "Please select one of your active orders to track, or type your Order ID if it's not listed.",
+                                    text: "Please select one of your active orders to track:",
                                     options: recentOrderIds
                                 });
                             }
@@ -154,20 +154,20 @@ const processMessage = async (messageText, userId = null) => {
                     db.query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5', (err, orders) => {
                         if (err || !orders || orders.length === 0) {
                             resolve({
-                                text: "Please provide your Order ID. You can find your Order ID in the 'Orders' section of your account (e.g., ORD-12345).",
-                                options: []
+                                text: "No orders found.",
+                                options: ["Orders", "Custom Art"]
                             });
                         } else {
                             const trackableOrders = orders.filter(o => o.status !== 'Cancelled' && o.status !== 'Delivered');
                             if (trackableOrders.length === 0) {
                                 resolve({
-                                    text: "There are no active orders to track. Please provide an Order ID directly.",
+                                    text: "There are no active orders to track right now.",
                                     options: ["Orders", "Custom Art"]
                                 });
                             } else {
                                 const recentOrderIds = trackableOrders.slice(0, 3).map(o => `ORD-${o.order_id}`);
                                 resolve({
-                                    text: "Please select one of the recent active orders to track, or type an Order ID if it's not listed.",
+                                    text: "Please select one of the recent active orders to track:",
                                     options: recentOrderIds
                                 });
                             }
@@ -190,12 +190,12 @@ const processMessage = async (messageText, userId = null) => {
                     if (err) {
                         console.error('Error tracking custom art via bot:', err);
                         resolve({
-                            text: `Oops, something went wrong while trying to find request ${displayReqId}.`,
+                            text: `Oops, something went wrong while trying to find request **${displayReqId}**.`,
                             options: ["Orders", "Custom Art"]
                         });
                     } else if (!req) {
                         resolve({
-                            text: `I couldn't find a Custom Art request with ID: ${displayReqId}. Please check the ID and try again.`,
+                            text: `No Custom Art request found matching ID **${displayReqId}**. Please check your Request ID and try again.`,
                             options: ["Orders", "Custom Art"]
                         });
                     } else {
@@ -286,14 +286,14 @@ const processMessage = async (messageText, userId = null) => {
             orderModel.getUserOrders(userId, (err, orders) => {
                 if (err || !orders || orders.length === 0) {
                     resolve({
-                        text: "You don't have any orders to return.",
+                        text: "No orders found for your account eligible for return.",
                         options: ["Orders", "Custom Art"]
                     });
                 } else {
                     const returnableOrders = orders.filter(o => o.status === 'Delivered');
                     if (returnableOrders.length === 0) {
                         resolve({
-                            text: "You don't have any delivered orders eligible for return.",
+                            text: "You don't have any delivered orders eligible for return right now.",
                             options: ["Orders", "Custom Art"]
                         });
                     } else {
@@ -462,14 +462,14 @@ const processMessage = async (messageText, userId = null) => {
                     orderModel.getUserOrders(userId, (err, orders) => {
                         if (err || !orders || orders.length === 0) {
                             resolve({
-                                text: "You don't have any orders to cancel.",
+                                text: "No orders found for your account to cancel.",
                                 options: ["Orders", "Custom Art"]
                             });
                         } else {
                             const cancelableOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Processing');
                             if (cancelableOrders.length === 0) {
                                 resolve({
-                                    text: "You don't have any orders that are eligible for cancellation (only Pending or Processing orders can be cancelled).",
+                                    text: "You don't have any orders eligible for cancellation right now (only Pending or Processing orders can be cancelled).",
                                     options: ["Orders", "Custom Art"]
                                 });
                             } else {
@@ -502,8 +502,6 @@ const processMessage = async (messageText, userId = null) => {
         }
     }
 
-    // Removed redundant track order block
-
     // Intent: Greeting
     if (text === 'hi' || text === 'hello' || text === 'start' || text === '/start') {
         return {
@@ -512,9 +510,9 @@ const processMessage = async (messageText, userId = null) => {
         };
     }
 
-    // Fallback
+    // Fallback for unknown messages/out-of-scope inputs
     return {
-        text: "I'm not sure I understand that. Please choose a category below to get started.",
+        text: "Sorry, that request seems to be outside my current capabilities! 🎨 Please select a category below or choose an option to get started:",
         options: ["Orders", "Custom Art"]
     };
 };

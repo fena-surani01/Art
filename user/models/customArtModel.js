@@ -47,8 +47,54 @@ const trackCustomRequest = (requestId, callback) => {
     });
 };
 
+const getHappyCustomers = (callback) => {
+    const query = `
+        SELECT cr.*, u.name as customer_name, a.artist_name 
+        FROM custom_requests cr
+        LEFT JOIN user u ON cr.user_id = u.id
+        LEFT JOIN artists a ON cr.assigned_artist_id = a.artist_id
+        WHERE cr.show_in_gallery = 1
+        ORDER BY cr.created_at DESC
+    `;
+    db.query(query, [], (err, results) => {
+        if (err) {
+            console.error("Error fetching happy customers:", err);
+            return callback(null, []);
+        }
+
+        if (!results || results.length === 0) {
+            return callback(null, []);
+        }
+
+        const imgQuery = `
+            SELECT custom_request_id, image_path 
+            FROM art_images 
+            WHERE custom_request_id IS NOT NULL
+        `;
+        db.query(imgQuery, [], (imgErr, imgResults) => {
+            const imgMap = {};
+            if (!imgErr && imgResults) {
+                imgResults.forEach(img => {
+                    if (!imgMap[img.custom_request_id]) {
+                        imgMap[img.custom_request_id] = [];
+                    }
+                    imgMap[img.custom_request_id].push(img.image_path);
+                });
+            }
+
+            results.forEach(req => {
+                const adminImgs = imgMap[req.request_id] || [];
+                req.gallery_images = adminImgs; // ONLY Admin added images
+            });
+
+            callback(null, results);
+        });
+    });
+};
+
 module.exports = {
     addCustomRequest,
     getCustomRequestsByUserId,
-    trackCustomRequest
+    trackCustomRequest,
+    getHappyCustomers
 };

@@ -4,6 +4,8 @@ const {checkUser} =  require('../middleware/authMiddleware')
 
 const artController = require('../controller/artController');
 const orderController = require('../controller/orderController');
+const reviewController = require('../controller/reviewController');
+const customArtController = require('../controller/customArtController');
 
 
 router.get('/user/home',checkUser,(req,res)=>{
@@ -22,15 +24,16 @@ router.put('/api/user/orders/:id/cancel', checkUser, orderController.cancelUserO
 router.post('/api/orders/return', checkUser, orderController.requestReturn);
 router.get('/api/user/orders/track/:orderId', orderController.trackOrder); // Open to all for tracking
 
+// Happy Customers Route (Public)
+router.get('/happy-customers', customArtController.viewHappyCustomersPage);
+
 
 // Reviews Routes
-const reviewController = require('../controller/reviewController');
 router.get('/api/user/reviews/pending', checkUser, reviewController.checkPendingReviews);
 router.post('/api/user/reviews/submit', checkUser, reviewController.submitReview);
-router.get('/api/reviews/approved', checkUser, reviewController.getApprovedReviews);
+router.get('/api/reviews/approved', reviewController.getApprovedReviews);
 
 // Custom Art Routes
-const customArtController = require('../controller/customArtController');
 router.get('/user/custom-art', checkUser, customArtController.viewCustomArtPage);
 router.post('/api/custom-art/submit', checkUser, customArtController.upload.single('reference_image'), customArtController.submitCustomRequest);
 
@@ -47,4 +50,4 @@ router.get('/api/locations', (req, res) => {
     });
 });
 
-module.exports = router
+module.exports = router;

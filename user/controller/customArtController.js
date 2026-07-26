@@ -77,12 +77,54 @@ const insertCustomRequest = (data, res) => {
             console.error("Error inserting custom request:", err);
             return res.json({ success: false, message: 'Failed to submit request' });
         }
+
+        const requestId = result ? result.insertId : null;
+
+        // Send Confirmation Email
+        const db = require('../config/db');
+        db.query("SELECT name, email FROM user WHERE id = ?", [data.user_id], (uErr, uRes) => {
+            const userEmail = (uRes && uRes.length > 0 && uRes[0].email) ? uRes[0].email : null;
+            const userName = (uRes && uRes.length > 0 && uRes[0].name) ? uRes[0].name : 'Customer';
+
+            if (userEmail) {
+                console.log(`[Custom Art Email] 📬 Dispatching confirmation email TO customer login email: ${userEmail} for Request #${requestId}`);
+                const estDate = new Date();
+                estDate.setDate(estDate.getDate() + 5);
+                const estDateStr = estDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+                const emailService = require('../config/emailService');
+                emailService.sendOrderConfirmationEmail({
+                    toEmail: userEmail,
+                    customerName: userName,
+                    orderId: requestId,
+                    isCustom: true,
+                    details: { price: data.estimated_price, estDeliveryDate: estDateStr }
+                });
+            } else {
+                console.error(`[Custom Art Email] ❌ No email found for user ID: ${data.user_id}`);
+            }
+        });
+
         res.json({ success: true, message: 'Request submitted successfully' });
+    });
+};
+
+const viewHappyCustomersPage = (req, res) => {
+    customArtModel.getHappyCustomers((err, results) => {
+        if (err) {
+            console.error("Error fetching happy customers:", err);
+            results = [];
+        }
+        res.render('happyCustomers', {
+            user: (req.session && req.session.user) ? req.session.user : null,
+            customers: results || []
+        });
     });
 };
 
 module.exports = {
     viewCustomArtPage,
     submitCustomRequest,
-    upload
+    upload,
+    viewHappyCustomersPage
 };

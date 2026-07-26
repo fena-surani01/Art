@@ -59,6 +59,29 @@ body {
     background: white;
     box-shadow: 0 5px 20px rgba(0, 0, 0, .08);
     padding-top: 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #1E3A5F #f1f5f9;
+}
+
+/* Sidebar Custom Blue Scrollbar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #1E3A5F;
+    border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #2C4E73;
 }
 
 .sidebar-link {
