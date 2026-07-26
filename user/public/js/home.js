@@ -94,6 +94,19 @@ async function loadReviews() {
 
 // Art Cards
 async function loadArts() {
+    const artContainer = document.getElementById('artContainer');
+    if (artContainer && !document.getElementById('artPageLoader')) {
+        artContainer.innerHTML = `
+            <div class="col-12 text-center py-5 my-5" id="artPageLoader">
+                <div class="spinner-border text-dark mb-3" style="width: 3.5rem; height: 3.5rem; border-width: 0.25em;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="fw-bold text-dark mb-1" style="letter-spacing: 0.5px;">Curating Masterpieces...</h5>
+                <p class="text-muted small">Please wait while we prepare authentic artworks for you</p>
+            </div>
+        `;
+    }
+
     const response = await fetch('/api/arts')
     const arts = await response.json()
 
@@ -114,6 +127,18 @@ async function loadArts() {
         console.error(e);
     }
 
+    // Preload primary images so cards display only after images have loaded (with a 4-second safety fallback)
+    const preloadPromise = Promise.all(arts.map(art => {
+        return new Promise((resolve) => {
+            if (!art.images || art.images.length === 0) return resolve();
+            const img = new Image();
+            img.src = art.images[0];
+            img.onload = resolve;
+            img.onerror = resolve;
+        });
+    }));
+    await Promise.race([preloadPromise, new Promise(r => setTimeout(r, 4000))]);
+
     let html = '';
 
     arts.forEach(art => {
@@ -129,7 +154,7 @@ async function loadArts() {
                     </div>
                 ` : ''}
 
-                <div class="art-image-wrapper position-relative">
+                <div class="art-image-wrapper position-relative" style="background: #f8f9fa; min-height: 250px;">
 
                    <div id="carousel-${art.art_id}" class="carousel slide">
                         
