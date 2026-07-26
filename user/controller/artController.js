@@ -19,6 +19,7 @@ const getArts = (req, res) => {
                     title: row.title,
                     category: row.category,
                     artist_name: row.artist_name,
+                    description: row.description,
                     price: row.price,
                     rating: row.calculated_rating ? parseFloat(row.calculated_rating).toFixed(1) : (row.rating || 0),
                     review_count: row.review_count || 0,

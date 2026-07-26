@@ -119,7 +119,7 @@ async function loadArts() {
     arts.forEach(art => {
         html += `
 
-       <div class="col-lg-4 col-md-6 mb-4">
+       <div class="col-xl-3 col-lg-3 col-md-6 mb-4">
 
             <div class="art-card position-relative overflow-hidden" style="border: none !important; ${art.stock <= 0 ? 'border-top: 4px solid #dc3545 !important; filter: grayscale(0.3); opacity: 0.9;' : 'border-top: 4px solid #000000 !important;'}">
 
@@ -197,11 +197,9 @@ async function loadArts() {
                         By <span class="fw-semibold text-dark">${art.artist_name}</span>
                     </p>
 
-                    ${art.description ? `
                     <p class="art-description text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; height: 2.8em;">
-                        ${art.description}
+                        ${art.description || 'Authentic handcrafted masterpiece.'}
                     </p>
-                    ` : '<div style="min-height: 2.8em;"></div>'}
 
                     <div class="d-flex justify-content-between align-items-center">
 
