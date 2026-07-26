@@ -41,9 +41,9 @@ router.post('/api/custom-art/submit', checkUser, customArtController.upload.sing
 // Locations API (States & Cities)
 const db = require('../config/db');
 router.get('/api/locations', (req, res) => {
-    db.query("SELECT * FROM states ORDER BY state_name ASC", (err, states) => {
+    db.query("SELECT * FROM states WHERE is_active = 1 OR is_active IS NULL ORDER BY state_name ASC", (err, states) => {
         if (err) return res.status(500).json({ success: false });
-        db.query("SELECT * FROM cities ORDER BY city_name ASC", (err, cities) => {
+        db.query("SELECT c.* FROM cities c JOIN states s ON c.state_id = s.id WHERE (c.is_active = 1 OR c.is_active IS NULL) AND (s.is_active = 1 OR s.is_active IS NULL) ORDER BY c.city_name ASC", (err, cities) => {
             if (err) return res.status(500).json({ success: false });
             res.json({ success: true, states, cities });
         });
