@@ -219,6 +219,15 @@ Already have an account? <a href="/user/signin">Login</a>
                         window.location.href = '/user/signin'
                     },800)
                 }
+            },
+            error : function(xhr){
+                const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Server or database connection error. Please try again.';
+                $("#message").html(`
+                    <div class="alert alert-danger d-flex align-items-center py-2 px-3 rounded-3 shadow-sm border-0 bg-danger bg-opacity-25 text-white">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5 text-danger"></i>
+                        <div><strong>Error:</strong> ${msg}</div>
+                    </div>
+                `);
             }
         })
     })

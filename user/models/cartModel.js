@@ -20,7 +20,7 @@ const getCartByUserId = (userId, callback) => {
         SELECT 
             c.cart_id, c.quantity, c.created_at,
             a.art_id, a.title, a.price, a.category, a.artist_name, a.stock, a.art_size, a.art_type,
-            MIN(ai.image_path) as image_path
+            COALESCE(MIN(ai.image_path), a.image) as image_path
         FROM cart c
         JOIN arts a ON c.art_id = a.art_id
         LEFT JOIN art_images ai ON a.art_id = ai.art_id
@@ -28,7 +28,15 @@ const getCartByUserId = (userId, callback) => {
         GROUP BY c.cart_id
         ORDER BY c.created_at DESC;
     `;
-    db.query(sql, [userId], callback);
+    db.query(sql, [userId], (err, results) => {
+        if (!err && results) {
+            const { formatImageUrl } = require('../utils/imageHelper');
+            results.forEach(row => {
+                row.image_path = formatImageUrl(row.image_path);
+            });
+        }
+        callback(err, results);
+    });
 };
 
 const removeFromCart = (cartId, userId, callback) => {

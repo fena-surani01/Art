@@ -107,8 +107,40 @@ async function loadArts() {
         `;
     }
 
-    const response = await fetch('/api/arts')
-    const arts = await response.json()
+    let arts = [];
+    try {
+        const response = await fetch('/api/arts');
+        arts = await response.json();
+    } catch (e) {
+        console.error("Failed to fetch /api/arts:", e);
+    }
+
+    if (!Array.isArray(arts)) {
+        console.error("Unexpected /api/arts response:", arts);
+        if (artContainer) {
+            artContainer.innerHTML = `
+                <div class="col-12 text-center py-5 my-5">
+                    <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark">Failed to load artworks</h5>
+                    <p class="text-muted small">Please check your database or refresh the page.</p>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    if (arts.length === 0) {
+        if (artContainer) {
+            artContainer.innerHTML = `
+                <div class="col-12 text-center py-5 my-5">
+                    <i class="bi bi-palette text-muted fs-1 mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark">No Artworks Found</h5>
+                    <p class="text-muted small">New authentic artworks will appear here once added!</p>
+                </div>
+            `;
+        }
+        return;
+    }
 
     // Randomize sequence of art cards on page load
     for (let i = arts.length - 1; i > 0; i--) {
@@ -182,7 +214,9 @@ async function loadArts() {
                                             <img
                                                 src="${img}"
                                                 class="d-block w-100 art-image"
-                                            >
+                                                alt="${art.title}"
+                                                loading="lazy"
+                                                onerror="handleImageFallback(this)">
                                         </a>
 
                                     </div>
@@ -318,3 +352,24 @@ function showToast(message, type) {
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
 }
+
+function handleImageFallback(imgEl) {
+    if (!imgEl.dataset.fallbackStep) {
+        imgEl.dataset.fallbackStep = '1';
+        const parts = imgEl.src.split('/');
+        const filename = parts.pop().split('?')[0];
+        if (imgEl.src.includes('/arts/')) {
+            imgEl.src = 'https://ik.imagekit.io/7pkfp2th6j/' + filename;
+            return;
+        }
+        imgEl.src = '/images/arts/' + filename;
+    } else if (imgEl.dataset.fallbackStep === '1') {
+        imgEl.dataset.fallbackStep = '2';
+        const parts = imgEl.src.split('/');
+        const filename = parts.pop().split('?')[0];
+        imgEl.src = '/images/arts/' + filename;
+    } else {
+        imgEl.src = '/images/default-art.jpg';
+    }
+}
+window.handleImageFallback = handleImageFallback;

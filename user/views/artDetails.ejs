@@ -58,7 +58,7 @@
                     <div class="carousel-inner rounded" style="border-radius: 12px;">
                         <% art.images.forEach((img, index) => { %>
                             <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-                                <img src="<%= img %>" class="d-block w-100 art-details-img" alt="<%= art.title %>">
+                                <img src="<%= img %>" class="d-block w-100 art-details-img" alt="<%= art.title %>" onerror="handleImageFallback(this)">
                             </div>
                         <% }) %>
                     </div>
@@ -172,5 +172,27 @@
     <%- include('partials/footer') %>
 
     <script src="/js/artDetails.js"></script>
+<script>
+function handleImageFallback(imgEl) {
+    if (!imgEl.dataset.fallbackStep) {
+        imgEl.dataset.fallbackStep = '1';
+        const parts = imgEl.src.split('/');
+        const filename = parts.pop().split('?')[0];
+        if (imgEl.src.includes('/arts/')) {
+            imgEl.src = 'https://ik.imagekit.io/7pkfp2th6j/' + filename;
+            return;
+        }
+        imgEl.src = '/images/arts/' + filename;
+    } else if (imgEl.dataset.fallbackStep === '1') {
+        imgEl.dataset.fallbackStep = '2';
+        const parts = imgEl.src.split('/');
+        const filename = parts.pop().split('?')[0];
+        imgEl.src = '/images/arts/' + filename;
+    } else {
+        imgEl.src = '/images/default-art.jpg';
+    }
+}
+window.handleImageFallback = handleImageFallback;
+</script>
 </body>
 </html>

@@ -1,139 +1,120 @@
 const authModel = require('../models/authModel');
 const bcrypt = require('bcrypt');
 
-exports.signupPage = (req,res)=>{
-    res.render('signup')
-}
+exports.signupPage = (req, res) => {
+    res.render('signup');
+};
 
-exports.signinPage = (req,res)=>{
-    res.render('signin')
-}
+exports.signinPage = (req, res) => {
+    res.render('signin');
+};
 
-exports.signUp = (req,res)=>{
-    const {name , email , password} = req.body;
+exports.signUp = (req, res) => {
+    const { name, email, password } = req.body;
 
-    // console.log(name,email,password)
-    if(!name || !email || !password)
-    {
-        // return res.render('signup',{
-        //     error :'All fileds are required !!'
-        // })
-
+    if (!name || !email || !password) {
         return res.json({
-            status : 'error',
-            message : 'All Fields are Required'
-        })
+            status: 'error',
+            message: 'All Fields are Required'
+        });
     }
 
-    authModel.checkemail(email,(err,result)=>{
-        if(err)
-        {
-            throw err;
-        }
-        if(result.length > 0)
-        {
-            // return res.render('signup',{
-            //     error:'Email is already Exists !!'
-            // })
-            return res.json({
-                status : 'error',
-                message : 'Email is already Exists !!'
-            })
+    authModel.checkemail(email, (err, result) => {
+        if (err) {
+            console.error("Signup checkemail error:", err);
+            return res.status(500).json({
+                status: 'error',
+                message: 'Database error: ' + (err.message || 'Unable to connect to database')
+            });
         }
 
-        
-        bcrypt.hash(password,10,(err,hashpassword)=>{
-            if(err)
-            {
-                throw err;
+        if (result && result.length > 0) {
+            return res.json({
+                status: 'error',
+                message: 'Email is already Exists !!'
+            });
+        }
+
+        bcrypt.hash(password, 10, (err, hashpassword) => {
+            if (err) {
+                console.error("Signup hash error:", err);
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Error processing password'
+                });
             }
 
-            authModel.signUp(name,email,hashpassword,(err,result)=>{
-                if(err)
-                {
-                    throw err;
+            authModel.signUp(name, email, hashpassword, (err, result) => {
+                if (err) {
+                    console.error("Signup insert error:", err);
+                    return res.status(500).json({
+                        status: 'error',
+                        message: 'Database error: ' + (err.message || 'Failed to create user')
+                    });
                 }
-                // res.render('signup',{
-                //     success:'You are sign Up Successfully'
-                // })
 
                 return res.json({
-                    status : 'success',
-                    message : 'You are sign Up Successfully'
-                })
-                
-            })
-        })
-      
-    })    
-}
+                    status: 'success',
+                    message: 'You are sign Up Successfully'
+                });
+            });
+        });
+    });
+};
 
+exports.signin = (req, res) => {
+    const { email, password } = req.body;
 
-exports.signin = (req,res)=>{
-    const {email,password} = req.body;
-
-    if(!email || !password)
-    {
-        // return res.render('signin',{
-        //     error : 'All fileds are Required !!'
-        // })
+    if (!email || !password) {
         return res.json({
-            status : 'error',
-            message : 'All Fields are Required'
-        })
+            status: 'error',
+            message: 'All Fields are Required'
+        });
     }
 
-    authModel.checklogin(email,(err,result)=>{
-        if(err)
-        {
-            throw err
+    authModel.checklogin(email, (err, result) => {
+        if (err) {
+            console.error("Signin checklogin error:", err);
+            return res.status(500).json({
+                status: 'error',
+                message: 'Database error: ' + (err.message || 'Unable to connect to database')
+            });
         }
 
-        if(result.length == 0)
-        {
-            // return res.render('signin',{
-            //     error : 'Invalid Email !!'
-            // })
+        if (!result || result.length === 0) {
             return res.json({
-                status : 'error',
-                message : 'Invalid Email !!'
-            })
+                status: 'error',
+                message: 'Invalid Email !!'
+            });
         }
-        //  result[0].password    >>> means password of the First Data  
-        // console.log(result[0].password);
-        bcrypt.compare(password,result[0].password,(err,isMatch)=>{
-            if(err)
-            {
-                throw err
+
+        bcrypt.compare(password, result[0].password, (err, isMatch) => {
+            if (err) {
+                console.error("Signin compare error:", err);
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Error verifying password'
+                });
             }
-            if(!isMatch)
-            {
-                // return res.render('signin',{
-                //     error : 'Invalid Password !!'
-                // })
+
+            if (!isMatch) {
                 return res.json({
-                    status : 'error',
-                    message : 'Invalid Password !!'
-                })
+                    status: 'error',
+                    message: 'Invalid Password !!'
+                });
             }
 
             req.session.user = result[0];
 
             authModel.setOnlineStatus(result[0].id, 1, (err) => {
-                if(err) console.error("Failed to set online status:", err);
+                if (err) console.error("Failed to set online status:", err);
             });
 
-            // res.send('Login Success ')
             return res.json({
-                status : 'success',
-                message : 'Login Successfully',
-                redirect : '/user/home'
-            })
-        })
-
-
-
-    })
-
-    
-}
+                status: 'success',
+                message: 'Login Successfully',
+                redirect: '/user/home'
+            });
+        });
+    });
+};

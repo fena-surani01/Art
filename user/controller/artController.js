@@ -1,19 +1,17 @@
-const artModel  =  require('../models/artModel')
+const artModel = require('../models/artModel');
+const { formatImageUrl } = require('../utils/imageHelper');
 
 const getArts = (req, res) => {
-
     artModel.getAllArts((err, result) => {
-
         if(err){
-            return res.status(500).json(err);
+            console.error("Error in getAllArts:", err);
+            return res.status(500).json({ error: err.message || "Database error" });
         }
 
         const artsMap = {};
 
         result.forEach(row => {
-
             if(!artsMap[row.art_id]){
-
                 artsMap[row.art_id] = {
                     art_id: row.art_id,
                     title: row.title,
@@ -26,14 +24,24 @@ const getArts = (req, res) => {
                     stock: row.stock,
                     art_size: row.art_size,
                     art_type: row.art_type,
-                    images:[]
+                    images: []
                 };
             }
 
-            if(row.image_path){
-                artsMap[row.art_id].images.push(row.image_path);
+            const rawImg = row.image_path || row.image;
+            if(rawImg){
+                const formatted = formatImageUrl(rawImg);
+                if (!artsMap[row.art_id].images.includes(formatted)) {
+                    artsMap[row.art_id].images.push(formatted);
+                }
             }
+        });
 
+        // Ensure every artwork has at least one valid image
+        Object.values(artsMap).forEach(art => {
+            if (art.images.length === 0) {
+                art.images.push('/images/default-art.jpg');
+            }
         });
 
         const artsArray = Object.values(artsMap);
@@ -45,9 +53,7 @@ const getArts = (req, res) => {
         }
 
         res.json(artsArray);
-
     });
-
 };
 
 const viewArtDetailsPage = (req, res) => {
@@ -77,8 +83,12 @@ const viewArtDetailsPage = (req, res) => {
         };
 
         results.forEach(row => {
-            if (row.image_path) {
-                artData.images.push(row.image_path);
+            const rawImg = row.image_path || row.image;
+            if (rawImg) {
+                const formatted = formatImageUrl(rawImg);
+                if (!artData.images.includes(formatted)) {
+                    artData.images.push(formatted);
+                }
             }
         });
 
@@ -109,4 +119,4 @@ const viewArtDetailsPage = (req, res) => {
 module.exports = {
     getArts,
     viewArtDetailsPage
-}
+};
