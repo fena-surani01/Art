@@ -1,6 +1,82 @@
 const db = require('./db');
 
 const tables = [
+    `CREATE TABLE IF NOT EXISTS user (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        phone_number VARCHAR(20) DEFAULT NULL,
+        address TEXT DEFAULT NULL,
+        city VARCHAR(100) DEFAULT NULL,
+        state VARCHAR(100) DEFAULT NULL,
+        zip_code VARCHAR(20) DEFAULT NULL,
+        is_online TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS admin (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        email VARCHAR(150) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'admin',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS artists (
+        artist_id INT AUTO_INCREMENT PRIMARY KEY,
+        artist_name VARCHAR(150) NOT NULL,
+        gender VARCHAR(20) DEFAULT NULL,
+        description TEXT DEFAULT NULL,
+        email VARCHAR(150) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        salary DECIMAL(10,2) DEFAULT 0.00,
+        join_date DATE DEFAULT NULL,
+        is_online TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS arts (
+        art_id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100),
+        art_type VARCHAR(100),
+        artist_name VARCHAR(150),
+        price DECIMAL(10,2) DEFAULT 0.00,
+        art_size VARCHAR(50),
+        image VARCHAR(255),
+        rating DECIMAL(2,1) DEFAULT 4.5,
+        total_reviews INT DEFAULT 0,
+        stock INT DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS art_images (
+        image_id INT AUTO_INCREMENT PRIMARY KEY,
+        art_id INT DEFAULT NULL,
+        custom_request_id INT DEFAULT NULL,
+        category VARCHAR(50) DEFAULT 'Art',
+        image_path VARCHAR(255) NOT NULL,
+        imagekit_file_id VARCHAR(255) DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS artist_attendance (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        artist_id INT NOT NULL,
+        date DATE NOT NULL,
+        status ENUM('Present', 'Absent', 'Half Day', 'Leave') DEFAULT 'Present',
+        last_check_in DATETIME DEFAULT NULL,
+        first_check_in DATETIME DEFAULT NULL,
+        last_break_time DATETIME DEFAULT NULL,
+        total_worked_seconds INT DEFAULT 0,
+        total_break_seconds INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_attendance_date (artist_id, date)
+    )`,
+    `CREATE TABLE IF NOT EXISTS artist_attendance_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        attendance_id INT NOT NULL,
+        action ENUM('Check In', 'Break/Check Out') NOT NULL,
+        time DATETIME NOT NULL
+    )`,
     `CREATE TABLE IF NOT EXISTS states (
         id INT AUTO_INCREMENT PRIMARY KEY,
         state_name VARCHAR(100) NOT NULL UNIQUE,
@@ -100,6 +176,10 @@ const tables = [
     )`
 ];
 
+const seedQueries = [
+    "INSERT IGNORE INTO admin (name, email, password, role) VALUES ('Admin', 'admin@gmail.com', 'admin@123', 'admin')"
+];
+
 const alterQueries = [
     "ALTER TABLE art_images MODIFY art_id INT NULL",
     "ALTER TABLE art_images ADD COLUMN custom_request_id INT NULL",
@@ -122,6 +202,19 @@ function initTables(callback) {
             db.query(query, (err) => {
                 if (err) console.error("Init table warning:", err.message);
                 runNextTable();
+            });
+        } else {
+            runSeeds();
+        }
+    }
+
+    let seedIdx = 0;
+    function runSeeds() {
+        if (seedIdx < seedQueries.length) {
+            const query = seedQueries[seedIdx];
+            seedIdx++;
+            db.query(query, () => {
+                runSeeds();
             });
         } else {
             runAlters();
@@ -147,4 +240,3 @@ function initTables(callback) {
 }
 
 module.exports = { initTables };
-
